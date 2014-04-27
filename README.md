@@ -1,6 +1,15 @@
 3dconnexion-rubik-cube
 =====================
 
+Setup
+-----
+
+Clone repository and initialize submodules:
+
+    git clone git@github.com:rzeszut/3dconnexion-rubik-cube.git
+    git submodule init
+    git submodule update
+
 Compiling and running
 -------------
 
