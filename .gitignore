@@ -1,0 +1,15 @@
+# build files
+build
+bin
+lib
+
+# backup trash
+*~
+*.swp
+*.swo
+
+# compiled python files (YCM extra settings)
+*.pyc
+
+# any logs
+*.log
