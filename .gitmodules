@@ -1,0 +1,3 @@
+[submodule "glew"]
+    path=thirdparty/glew-cmake
+    url=git@github.com:omniavinco/glew-cmake.git

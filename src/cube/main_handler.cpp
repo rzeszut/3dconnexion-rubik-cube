@@ -9,8 +9,7 @@
 namespace cube {
 
 bool MainHandler::onInit(GLFWwindow *window) {
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //We don't want the old OpenGL
-
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     // load model
