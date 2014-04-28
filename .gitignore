@@ -8,8 +8,9 @@ lib
 *.swp
 *.swo
 
-# compiled python files (YCM extra settings)
-*.pyc
-
 # any logs
 *.log
+
+# editor/IDE files
+.ycm_extra_conf.py
+*.pyc
