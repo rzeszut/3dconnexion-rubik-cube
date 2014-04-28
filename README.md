@@ -17,6 +17,10 @@ Install CMake and g++:
 
     sudo apt-get install cmake g++ pkg-config
 
+Install dependencies for GLFW:
+
+    sudo apt-get install xorg-dev libglu1-mesa-dev
+
 Compile debug version:
 
     ./build_debug
