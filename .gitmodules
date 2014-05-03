@@ -1,9 +1,9 @@
 [submodule "glew"]
     path = thirdparty/glew-cmake
-    url = git@github.com:omniavinco/glew-cmake.git
+    url = https:/github.com/omniavinco/glew-cmake.git
 [submodule "glfw"]
     path = thirdparty/glfw
-    url = git@github.com:glfw/glfw.git
+    url = https:/github.com/glfw/glfw.git
 [submodule "glm"]
     path = thirdparty/glm
-    url = git@github.com:g-truc/glm.git
+    url = https:/github.com/g-truc/glm.git

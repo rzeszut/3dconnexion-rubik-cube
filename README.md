@@ -4,14 +4,18 @@
 Setup
 -----
 
+Install Git, if you haven't already.
 Clone repository and initialize submodules:
 
     git clone git@github.com:rzeszut/3dconnexion-rubik-cube.git
+    cd 3dconnexion-rubik-cube
     git submodule init
     git submodule update
 
 Compiling and running
 -------------
+
+### Linux
 
 Install CMake and g++:
 
@@ -27,7 +31,16 @@ Compile debug version:
 
 Run the program:
 
-    ./bin/cube
+    ./run
+
+### Mac
+
+TBD -- probably similar to linux
+
+### Windows
+
+Install MinGW (with g++ and pthreads).
+Install CMake with adding it to PATH.
 
 Problems
 --------
