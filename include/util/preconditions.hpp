@@ -9,9 +9,18 @@
 
 namespace preconditions {
 
-#define CHECK(cond, message) if (!(cond)) throw preconditions::PreconditionFailedException(__FILENAME__, __LINE__, __func__, (message));
+#ifdef DISABLE_PRECONDITIONS
 
+#include <stdexcept>
+#define CHECK(cond, message) if (!(cond)) throw std::invalid_argument((message));
+#define CHECK_NOT_NULL(obj, message) if ((obj) == nullptr) throw std::invalid_argument((message));
+
+#else
+
+#define CHECK(cond, message) if (!(cond)) throw preconditions::PreconditionFailedException(__FILENAME__, __LINE__, __func__, (message));
 #define CHECK_NOT_NULL(obj, message) if ((obj) == nullptr) throw preconditions::PreconditionFailedException(__FILENAME__, __LINE__, __func__, (message));
+
+#endif
 
 class PreconditionFailedException final : public std::exception {
 private:

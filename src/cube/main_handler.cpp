@@ -39,11 +39,13 @@ bool MainHandler::onInit(GLFWwindow *window) {
     glGenBuffers(1, &vertexBufferID);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * cube->vertices.size(), &cube->vertices[0], GL_STATIC_DRAW);
+    vertexLocation = glGetAttribLocation(programID, "vertexPosition");
 
     // uv buffer creation
     glGenBuffers(1, &uvBufferID);
     glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * cube->uvs.size(), &cube->uvs[0], GL_STATIC_DRAW);
+    uvLocation = glGetAttribLocation(programID, "vertexUV");
 
     // normal buffer creation
     glGenBuffers(1, &normalBufferID);
@@ -141,26 +143,26 @@ void MainHandler::onRender() {
     glUniform1i(textureUniform, 0);
 
     // send vertex buffer
-    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(vertexLocation);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     // send uv buffer
-    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(uvLocation);
     glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     // send normal buffer
-    glEnableVertexAttribArray(2);
-    glBindBuffer(GL_ARRAY_BUFFER, normalBufferID);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    //glEnableVertexAttribArray(2);
+    //glBindBuffer(GL_ARRAY_BUFFER, normalBufferID);
+    //glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     // draw
     glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
 
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(vertexLocation);
+    glDisableVertexAttribArray(uvLocation);
+    //glDisableVertexAttribArray(2);
 }
 
 }

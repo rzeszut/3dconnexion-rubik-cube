@@ -2,11 +2,14 @@
 #define OUTPUT_HPP_WJFR9CBI
 
 #include <ctime>
-#include <mutex>
 #include <iostream>
 #include <ostream>
 #include <fstream>
 #include <string>
+
+#ifndef NO_THREADSAFE_LOGGING
+#include <mutex>
+#endif
 
 #include "level.hpp"
 
@@ -42,7 +45,9 @@ public:
 class SimpleOutput : public Output {
 private:
     LogLevel outputLevel;
+#ifndef NO_THREADSAFE_LOGGING
     static std::mutex mtx;
+#endif
 
 protected:
     /**

@@ -19,12 +19,15 @@ class MainHandler : public gl::WindowHandler {
     GLuint normalBufferID;
 
     GLuint textureID;
-    GLuint textureUniform;
 
     GLuint programID;
 
     glm::mat4 mvp;
+
     GLuint matrixID;
+    GLuint textureUniform;
+    GLuint vertexLocation;
+    GLuint uvLocation;
 
     gl::CenteredCamera *camera;
 

@@ -10,7 +10,9 @@ using namespace std;
 
 namespace logging {
 
+#ifndef NO_THREADSAFE_LOGGING
 mutex SimpleOutput::mtx;
+#endif
 
 // remove this function when GCC supports std::put_time
 // as of version 4.8.1, std::put_time is not supported
@@ -33,8 +35,10 @@ void SimpleOutput::writeLine(LogLevel level,
     if (level <= outputLevel) {
         ostream &out = this->getOutput();
 
+#ifndef NO_THREADSAFE_LOGGING
         // lock for simultaneous print
         mtx.lock();
+#endif
 
         // log level
         switch (level) {
@@ -57,7 +61,9 @@ void SimpleOutput::writeLine(LogLevel level,
         // log message
         out << message << endl;
 
+#ifndef NO_THREADSAFE_LOGGING
         mtx.unlock();
+#endif
     }
 }
 

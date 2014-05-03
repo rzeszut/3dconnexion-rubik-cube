@@ -39,14 +39,22 @@ TBD -- probably similar to linux
 
 ### Windows
 
-Install MinGW (with g++ and pthreads).
-Install CMake with adding it to PATH.
+Install [MinGW](http://sourceforge.net/projects/mingwbuilds/) and add it into PATH.
+Install [CMake](http://www.cmake.org/cmake/resources/software.html) with adding it to PATH.
+
+Compile debug version:
+
+    ./build_debug.bat
+
+Run the program:
+
+    ./run.bat
 
 Problems
 --------
 
 1. CMake errors:
 
-    make clean
-    ./build_debug
+        make clean
+        ./build_debug
 

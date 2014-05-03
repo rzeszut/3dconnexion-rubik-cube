@@ -40,6 +40,13 @@ include_directories(thirdparty/glew-cmake/include)
 add_definitions(-DGLM_FORCE_RADIANS)
 include_directories(thirdparty/glm)
 
+if (WIN32)
+    # Fuck you, Microsoft
+    add_definitions(-DDISABLE_LOGGING)
+    add_definitions(-DNO_THREADSAFE_LOGGING)
+    add_definitions(-DDISABLE_PRECONDITIONS)
+endif ()
+
 include_directories(${INCLUDES})
 add_subdirectory(${SOURCES})
 
