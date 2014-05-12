@@ -7,9 +7,12 @@
 
 #include "util.hpp"
 
-namespace preconditions {
+#if defined DISABLE_PRECONDITIONS
 
-#ifdef DISABLE_PRECONDITIONS
+#define CHECK(cond, message) //
+#define CHECK_NOT_NULL(obj, message) //
+
+#elif defined PRECONDITIONS_FALLBACK
 
 #include <stdexcept>
 #define CHECK(cond, message) if (!(cond)) throw std::invalid_argument((message));
@@ -17,10 +20,14 @@ namespace preconditions {
 
 #else
 
-#define CHECK(cond, message) if (!(cond)) throw preconditions::PreconditionFailedException(__FILENAME__, __LINE__, __func__, (message));
-#define CHECK_NOT_NULL(obj, message) if ((obj) == nullptr) throw preconditions::PreconditionFailedException(__FILENAME__, __LINE__, __func__, (message));
+#define CHECK(cond, message) if (!(cond)) \
+    throw preconditions::PreconditionFailedException(__FILENAME__, __LINE__, __func__, (message));
+#define CHECK_NOT_NULL(obj, message) \
+    if ((obj) == nullptr) throw preconditions::PreconditionFailedException(__FILENAME__, __LINE__, __func__, (message));
 
 #endif
+
+namespace preconditions {
 
 class PreconditionFailedException final : public std::exception {
 private:
@@ -30,10 +37,10 @@ private:
     std::string message;
 
 public:
-    PreconditionFailedException(std::string filename,
+    PreconditionFailedException(const std::string &filename,
                                 int line,
-                                std::string function,
-                                std::string message) noexcept;
+                                const std::string &function,
+                                const std::string &message) noexcept;
 
     const char *what() const noexcept;
 };
@@ -41,10 +48,10 @@ public:
 // ------------------ //
 // inline definitions //
 // ------------------ //
-inline PreconditionFailedException::PreconditionFailedException(std::string f,
-                                int l,
-                                std::string fn,
-                                std::string m) noexcept :
+inline PreconditionFailedException::PreconditionFailedException(const std::string &f,
+                                                                int l,
+                                                                const std::string &fn,
+                                                                const std::string &m) noexcept :
     filename(f), line(l), function(fn), message(m)
 {}
 

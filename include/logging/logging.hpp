@@ -8,19 +8,26 @@
 #include "level.hpp"
 #include "output.hpp"
 
-namespace logging {
+#if defined DISABLE_LOGGING
 
-#ifdef DISABLE_LOGGING
+#define LOG(lvl) //
+#define LOG_CHECK(lvl, check) //
+
+#elif defined LOGGING_FALLBACK
 
 #define LOG(lvl) std::cerr << std::endl
 #define LOG_CHECK std::cerr << std::endl
 
 #else
 
-#define LOG(lvl) if ((logging::lvl) <= logging::getLevel()) logging::Log(logging::lvl, __FILENAME__, __LINE__, __func__).get()
-#define LOG_CHECK(lvl, check) if (logging::lvl <= logging::getLevel() && (check)) logging::Log(logging::lvl, __FILENAME__, __LINE__, __func__).get()
+#define LOG(lvl) if ((logging::lvl) <= logging::getLevel()) \
+    logging::Log(logging::lvl, __FILENAME__, __LINE__, __func__).get()
+#define LOG_CHECK(lvl, check) if (logging::lvl <= logging::getLevel() && (check)) \
+    logging::Log(logging::lvl, __FILENAME__, __LINE__, __func__).get()
 
 #endif
+
+namespace logging {
 
 /**
  * Sets the global logging level.

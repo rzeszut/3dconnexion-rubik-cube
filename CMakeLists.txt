@@ -40,11 +40,13 @@ include_directories(thirdparty/glew-cmake/include)
 add_definitions(-DGLM_FORCE_RADIANS)
 include_directories(thirdparty/glm)
 
+# Disable multi-threaded logging (single thread application)
+add_definitions(-DNO_THREADSAFE_LOGGING)
+
+# Fuck you, Microsoft
 if (WIN32)
-    # Fuck you, Microsoft
-    add_definitions(-DDISABLE_LOGGING)
-    add_definitions(-DNO_THREADSAFE_LOGGING)
-    add_definitions(-DDISABLE_PRECONDITIONS)
+    add_definitions(-DLOGGING_FALLBACK)
+    add_definitions(-DPRECONDITIONS_FALLBACK)
 endif ()
 
 include_directories(${INCLUDES})

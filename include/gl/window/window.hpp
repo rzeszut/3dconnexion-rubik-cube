@@ -15,7 +15,7 @@ private:
     int framesPerSecond = DEFAULT_FPS;
 
 public:
-    Window(int width, int height, const char *title);
+    Window(int width, int height, const char *title, WindowHandler *handler);
     ~Window();
 
     bool init() override;
@@ -27,24 +27,20 @@ public:
 
     void loop();
 
-    void setHandler(WindowHandler *handler);
     void setFPS(int fps);
 };
 
 // ------------------ //
 // inline definitions //
 // ------------------ //
-inline Window::Window(int width, int height, const char *title)
+inline Window::Window(int width, int height, const char *title, WindowHandler *h)
     : AbstractWindow(width, height, title),
+    handler(h),
     running(true)
 {}
 
 inline Window::~Window() {
     delete handler;
-}
-
-inline void Window::setHandler(WindowHandler *handler) {
-    this->handler = handler;
 }
 
 inline void Window::setFPS(int fps) {

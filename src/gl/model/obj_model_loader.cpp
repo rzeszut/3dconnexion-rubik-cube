@@ -4,21 +4,22 @@
 #include <sstream>
 #include <cstring>
 
-#include "gl/model/obj_model_factory.hpp"
 #include "util/io/stream_matcher.hpp"
 #include "logging/logging.hpp"
+#include "gl/model/obj_model_loader.hpp"
 
-using namespace glm;
 using namespace std;
+using namespace glm;
 using namespace io;
 
 namespace gl {
+namespace model {
 
 static bool startsWith(const string &str, const string &pattern) {
     return strncmp(str.c_str(), pattern.c_str(), pattern.length()) == 0;
 }
 
-shared_ptr<Model> ObjModelFactory::fromFile(const char *filename) {
+unique_ptr<Model> ObjModelLoader::fromFile(const char *filename) {
     LOG(INFO) << "Loading OBJ model: " << filename;
 
     vector<unsigned> vertexIndices;
@@ -81,24 +82,23 @@ shared_ptr<Model> ObjModelFactory::fromFile(const char *filename) {
     }
     file.close();
 
-    Model *model = new Model;
-
+    vector<vec3> vertices;
+    vector<vec3> normals;
+    vector<vec2> uvs;
     for (auto &vertexIndex : vertexIndices) {
-        model->vertices.push_back(verticesTemp[vertexIndex - 1]);
+        vertices.push_back(verticesTemp[vertexIndex - 1]);
     }
     for (auto &uvIndex : uvIndices) {
-        model->uvs.push_back(uvsTemp[uvIndex - 1]);
+        uvs.push_back(uvsTemp[uvIndex - 1]);
     }
     for (auto &normalIndex : normalIndices) {
-        model->normals.push_back(normalsTemp[normalIndex - 1]);
+        normals.push_back(normalsTemp[normalIndex - 1]);
     }
 
-    return shared_ptr<Model>(model);
+    auto *model = new Model{vertices, normals, uvs};
+    return unique_ptr<Model>(model);
 }
 
-shared_ptr<Model> ObjModelFactory::fromContents(const char *) {
-    return nullptr;
 }
-
 }
 

@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "gl/shader.hpp"
+#include "gl/shader/loader.hpp"
 #include "logging/logging.hpp"
 
 using namespace std;
@@ -54,7 +54,7 @@ static GLuint createShader(GLenum shaderType, const char *code) {
         // get log
         vector<char> errorMessages(infoLogLength);
         glGetShaderInfoLog(shader, infoLogLength, NULL, &errorMessages[0]);
-        LOG(ERROR) << &errorMessages[0];
+        LOG(ERROR) << std::endl << &errorMessages[0];
 
         // delete shader
         glDeleteShader(shader);

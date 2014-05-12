@@ -1,5 +1,5 @@
-#ifndef SHADER_HPP_QTAMZJ60
-#define SHADER_HPP_QTAMZJ60
+#ifndef LOADER_HPP_5ZK9K3A1
+#define LOADER_HPP_5ZK9K3A1
 
 #include <GL/glew.h>
 
@@ -15,5 +15,5 @@ GLuint loadFromFiles(const char *vertexFilePath, const char *fragmentFilePath);
 }
 }
 
-#endif /* end of include guard: SHADER_HPP_QTAMZJ60 */
+#endif /* end of include guard: LOADER_HPP_5ZK9K3A1 */
 

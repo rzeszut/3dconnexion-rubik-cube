@@ -5,7 +5,9 @@
 
 #include "gl/window/window_handler.hpp"
 #include "gl/camera/centered_camera.hpp"
-#include "gl/model/obj_model_factory.hpp"
+#include "gl/model/obj_model_loader.hpp"
+#include "gl/model/indexed_model.hpp"
+#include "gl/shader/program.hpp"
 
 namespace cube {
 
@@ -13,38 +15,27 @@ const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
 class MainHandler : public gl::WindowHandler {
-    std::shared_ptr<gl::Model> cube;
-    GLuint vertexBufferID;
-    GLuint uvBufferID;
-    GLuint normalBufferID;
+    std::unique_ptr<gl::model::IndexedModel> cube;
+    std::unique_ptr<gl::shader::Program> program;
 
     GLuint textureID;
-
-    GLuint programID;
-
-    glm::mat4 mvp;
-
-    GLuint matrixID;
-    GLuint textureUniform;
-    GLuint vertexLocation;
-    GLuint uvLocation;
 
     gl::CenteredCamera *camera;
 
 public:
-    bool onInit(GLFWwindow *window) override;
+    bool init(GLFWwindow *window) override;
 
-    void onCleanup() override;
+    void cleanup() override;
 
-    void onResize(int width, int height) override;
+    void resize(int width, int height) override;
 
-    void onHandleEvents(GLFWwindow *window) override;
+    void handleEvents(GLFWwindow *window) override;
 
-    void onMouseMove(float x, float y) override;
+    void mouseMove(float x, float y) override;
 
-    void onUpdate(float delta) override;
+    void update(float delta) override;
 
-    void onRender() override;
+    void render() override;
 };
 
 }

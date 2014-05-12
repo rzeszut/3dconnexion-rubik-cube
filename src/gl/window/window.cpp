@@ -15,7 +15,7 @@ bool Window::init() {
     }
 
     CHECK_NOT_NULL(handler, "Must set handler before using the window.");
-    ok = handler->onInit(getGLFWwindow());
+    ok = handler->init(getGLFWwindow());
     if (!ok) {
         AbstractWindow::cleanup();
     }
@@ -24,13 +24,13 @@ bool Window::init() {
 }
 
 void Window::cleanup() {
-    handler->onCleanup();
+    handler->cleanup();
     AbstractWindow::cleanup();
 }
 
 bool Window::handleResize() {
     if (AbstractWindow::handleResize()) {
-        handler->onResize(getWidth(), getHeight());
+        handler->resize(getWidth(), getHeight());
         return true;
     } else {
         return false;
@@ -47,7 +47,7 @@ void Window::handleEvents() {
         toggleFullscreen();
     }
 
-    handler->onHandleEvents(window);
+    handler->handleEvents(window);
 
     // mouse
     static bool mousePositionHack = true;
@@ -67,18 +67,18 @@ void Window::handleEvents() {
         y = getHeight() >> 1;
     }
 
-    handler->onMouseMove(x, y);
+    handler->mouseMove(x, y);
 }
 
 void Window::update(float delta) {
-    handler->onUpdate(delta);
+    handler->update(delta);
 }
 
 void Window::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    handler->onRender();
+    handler->render();
 
     glfwSwapBuffers(getGLFWwindow());
     glfwPollEvents();

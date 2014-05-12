@@ -10,7 +10,7 @@ using namespace glm;
 namespace gl {
 
 void CenteredCamera::update(float delta) {
-    horAngle += delta * turnSpeed * (float) turnY;
+    horAngle -= delta * turnSpeed * (float) turnY; // -/+ ?
     vertAngle += delta * turnSpeed * (float) turnX;
 
     radius -= delta * moveSpeed * (float) forwardBackward;
