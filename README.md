@@ -35,7 +35,15 @@ Run the program:
 
 ### Mac
 
-TBD -- probably similar to linux
+Install CMake and pkg-config:
+
+    brew install cmake
+    brew install pkg-config
+
+Install g++:
+
+    brew tap homebrew/versions
+    brew install gcc49 --enable-cxx
 
 ### Windows
 
