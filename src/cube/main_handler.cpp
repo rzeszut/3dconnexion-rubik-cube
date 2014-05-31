@@ -14,26 +14,7 @@ bool MainHandler::init() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwSetInputMode(getWindowReference(), GLFW_STICKY_KEYS, GL_TRUE);
 
-    // load model
-    cube = Mesh::fromOBJFile("resources/cube.obj");
-    if (!cube) {
-        return false;
-    }
-    cube->init();
-
-    // load shaders
-    auto vertexShader = Shader::fromFile("resources/vertex.vert", ShaderType::VERTEX);
-    auto fragmentShader = Shader::fromFile("resources/fragment.frag", ShaderType::FRAGMENT);
-    program = Program::fromShaders({vertexShader, fragmentShader});
-    if (!program) {
-        return false;
-    }
-
-    // load texture
-    texture = Texture::fromDDSFile("resources/uvmap.dds");
-    if (!texture) {
-        return false;
-    }
+    cube.init();
 
     // Dark blue background
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -44,6 +25,8 @@ bool MainHandler::init() {
     glEnable(GL_CULL_FACE);
 
     camera = new gl::CenteredCamera(glm::vec3(0, 0, 0), WINDOW_WIDTH, WINDOW_HEIGHT);
+    camera->setRadius(15.f);
+    camera->setMoveSpeed(10.f);
 
     return true;
 }
@@ -109,19 +92,7 @@ void MainHandler::render() {
     glm::mat4 projection = camera->getProjectionMatrix();
     glm::mat4 view = camera->getViewMatrix();
 
-    program->use([this, view, projection] () {
-        // model matrices
-        glm::mat4 model(1.f);
-        glm::mat4 modelViewProjection = projection * view * model;
-
-        program->setUniform("MVP", modelViewProjection);
-        program->setTexture2D("textureSampler", 0, texture->getID());
-
-        program->setAttribute("vertexPosition", cube->getVertexBufferInfo());
-        program->setAttribute("vertexUV", cube->getUVBufferInfo());
-
-        program->drawElements(GL_TRIANGLES, cube->getElementBufferInfo());
-    });
+    cube.render(view, projection);
 }
 
 }
