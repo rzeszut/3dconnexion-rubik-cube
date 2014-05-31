@@ -1,6 +1,8 @@
 #include <GL/glew.h>
+#include <list>
 
 #include "gl/shader/shader.hpp"
+#include "gl/picking/ray.hpp"
 #include "logging/logging.hpp"
 #include "cube/main_handler.hpp"
 
@@ -38,6 +40,9 @@ void MainHandler::cleanup() {
 void MainHandler::resize(int width, int height) {
     LOG(DEBUG) << width << ":" << height;
     camera->resize(width, height);
+
+    this->width = width;
+    this->height = height;
 }
 
 void MainHandler::handleEvents() {
@@ -78,7 +83,42 @@ void MainHandler::handleEvents() {
     }
 }
 
-void MainHandler::mouseMove(float, float) {
+void MainHandler::mouseMove(float x, float y) {
+    // FIXME: change mouse state to mouse event
+    if (glfwGetMouseButton(getWindowReference(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+
+        // same bounding box for all cubes
+        gl::picking::AABB aabb(glm::vec3(-1, -1, -1), glm::vec3(1, 1, 1));
+        auto ray = gl::picking::Ray::fromScreenPosition(
+            x, y, width, height,
+            camera->getViewMatrix(), camera->getProjectionMatrix());
+
+        // a list of all matched pairs: distance, coords of the cube
+        std::list<std::pair<float, Coords>> matched;
+        for (int i : {-1, 0, 1}) {
+            for (int j : {-1, 0, 1}) {
+                for (int k : {-1, 0, 1}) {
+                    auto &model = cube.getModelMatrix(i, j, k);
+                    auto result = gl::picking::testRayOBBIntersection(ray, aabb, model);
+
+                    if (result.first) {
+                        matched.push_back(std::make_pair(result.second, std::make_tuple(i, j, k)));
+                    }
+                }
+            }
+        }
+
+        // sort by distances
+        matched.sort([] (std::pair<float, Coords> o1, std::pair<float, Coords> o2) {
+            return o1.first < o2.first;
+        });
+
+        // the first once (the closes one was clicked)
+        if (!matched.empty()) {
+            auto picked = matched.front().second;
+            LOG(DEBUG) << "Picked cube " << picked;
+        }
+    }
 }
 
 void MainHandler::update(float delta) {

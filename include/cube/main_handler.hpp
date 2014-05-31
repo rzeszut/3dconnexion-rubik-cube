@@ -16,6 +16,8 @@ class MainHandler : public gl::WindowHandler {
     Cube cube;
 
     gl::CenteredCamera *camera;
+    int width = WINDOW_WIDTH;
+    int height = WINDOW_HEIGHT;
 
 public:
     bool init() override;

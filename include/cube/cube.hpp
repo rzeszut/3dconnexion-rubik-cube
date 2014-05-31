@@ -2,6 +2,7 @@
 #define CUBE_HPP_LEFAYCZB
 
 #include <array>
+#include <tuple>
 
 #include "glm/glm.hpp"
 
@@ -19,13 +20,31 @@ private:
 
     std::array<glm::mat4, 3 * 3 * 3> modelMatrices;
 
-    glm::mat4 &getModelMatrix(int i, int j, int k);
-
 public:
     void init();
 
     void render(const glm::mat4 &view, const glm::mat4 &projection);
+
+    glm::mat4 &getModelMatrix(int i, int j, int k);
+    const glm::mat4 &getModelMatrix(int i, int j, int k) const;
+
 };
+
+typedef std::tuple<int, int, int> Coords;
+
+std::ostream & operator<<(std::ostream &stream, const Coords &coords);
+
+// ------------------ //
+// inline definitions //
+// ------------------ //
+
+inline std::ostream & operator<<(std::ostream &stream, const Coords &coords) {
+    stream << "<" << std::get<0>(coords)
+        << ", " << std::get<1>(coords)
+        << ", " << std::get<2>(coords)
+        << ">";
+    return stream;
+}
 
 }
 

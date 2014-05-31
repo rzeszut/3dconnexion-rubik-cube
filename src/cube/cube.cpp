@@ -40,7 +40,7 @@ void Cube::init() {
     for (int i : {-1, 0, 1}) {
         for (int j : {-1, 0, 1}) {
             for (int k : {-1, 0, 1}) {
-                glm::mat4 &model = getModelMatrix(i, j, k);
+                auto &model = getModelMatrix(i, j, k);
                 model = glm::translate(model, glm::vec3(2 * i, 2 * j, 2 * k));
             }
         }
@@ -48,6 +48,10 @@ void Cube::init() {
 }
 
 glm::mat4 &Cube::getModelMatrix(int i, int j, int k) {
+    return modelMatrices.at(3 * 3 * (i + 1) + 3 * (j + 1) + (k + 1));
+}
+
+const glm::mat4 &Cube::getModelMatrix(int i, int j, int k) const {
     return modelMatrices.at(3 * 3 * (i + 1) + 3 * (j + 1) + (k + 1));
 }
 

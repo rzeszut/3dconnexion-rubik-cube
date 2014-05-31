@@ -18,4 +18,6 @@ add_library(gl-lib STATIC
     mesh/mesh.cpp
     mesh/index.cpp
     mesh/obj_loader.cpp
+
+    picking/ray.cpp
     )
