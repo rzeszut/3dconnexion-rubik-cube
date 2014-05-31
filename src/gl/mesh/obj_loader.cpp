@@ -6,21 +6,25 @@
 
 #include "util/io/stream_matcher.hpp"
 #include "logging/logging.hpp"
-#include "gl/model/obj_model_loader.hpp"
+#include "gl/mesh/obj_loader.hpp"
 
 using namespace std;
 using namespace glm;
 using namespace io;
 
 namespace gl {
-namespace model {
+namespace mesh {
 
 static bool startsWith(const string &str, const string &pattern) {
     return strncmp(str.c_str(), pattern.c_str(), pattern.length()) == 0;
 }
 
-unique_ptr<Model> ObjModelLoader::fromFile(const char *filename) {
-    LOG(INFO) << "Loading OBJ model: " << filename;
+bool loadOBJ(const char *filename,
+             std::vector<glm::vec3> &vertices,
+             std::vector<glm::vec3> &normals,
+             std::vector<glm::vec2> &uvs
+            ) {
+    LOG(INFO) << "Loading OBJ mesh: " << filename;
 
     vector<unsigned> vertexIndices;
     vector<unsigned> normalIndices;
@@ -32,7 +36,7 @@ unique_ptr<Model> ObjModelLoader::fromFile(const char *filename) {
     ifstream file(filename);
     if (!file) {
         LOG(ERROR) << "Can't open file: " << filename;
-        return nullptr;
+        return false;
     }
 
     while (!file.eof()) {
@@ -82,9 +86,6 @@ unique_ptr<Model> ObjModelLoader::fromFile(const char *filename) {
     }
     file.close();
 
-    vector<vec3> vertices;
-    vector<vec3> normals;
-    vector<vec2> uvs;
     for (auto &vertexIndex : vertexIndices) {
         vertices.push_back(verticesTemp[vertexIndex - 1]);
     }
@@ -95,8 +96,7 @@ unique_ptr<Model> ObjModelLoader::fromFile(const char *filename) {
         normals.push_back(normalsTemp[normalIndex - 1]);
     }
 
-    auto *model = new Model{vertices, normals, uvs};
-    return unique_ptr<Model>(model);
+    return true;
 }
 
 }

@@ -1,19 +1,23 @@
-#ifndef LOADER_HPP_5ZK9K3A1
-#define LOADER_HPP_5ZK9K3A1
+#ifndef LOADER_HPP_OUGEAVRJ
+#define LOADER_HPP_OUGEAVRJ
 
-#include <GL/glew.h>
+#include <vector>
+
+#include "GL/glew.h"
 
 namespace gl {
 namespace shader {
 
+const GLuint NULL_SHADER = 0;
 const GLuint NULL_PROGRAM = 0;
 
-GLuint loadFromSource(const char *vertexSource, const char *fragmentSource);
+GLuint loadShaderFromFile(const char *filename, GLenum type);
+GLuint loadShaderFromSource(const char *source, GLenum type);
 
-GLuint loadFromFiles(const char *vertexFilePath, const char *fragmentFilePath);
+GLuint compileProgram(const std::vector<GLuint> &shaders);
 
 }
 }
 
-#endif /* end of include guard: LOADER_HPP_5ZK9K3A1 */
+#endif /* end of include guard: LOADER_HPP_OUGEAVRJ */
 

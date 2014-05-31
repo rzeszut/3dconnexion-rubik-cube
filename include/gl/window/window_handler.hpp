@@ -6,16 +6,23 @@
 namespace gl {
 
 class WindowHandler {
+    friend class Window;
+
+    GLFWwindow *windowReference;
+
+protected:
+    GLFWwindow *getWindowReference() { return windowReference; }
+
 public:
     virtual ~WindowHandler() = default;
 
-    virtual bool init(GLFWwindow *window) = 0;
+    virtual bool init() = 0;
 
     virtual void cleanup() = 0;
 
     virtual void resize(int width, int height) = 0;
 
-    virtual void handleEvents(GLFWwindow *glfwWindow) = 0;
+    virtual void handleEvents() = 0;
 
     virtual void mouseMove(float x, float y) = 0;
 

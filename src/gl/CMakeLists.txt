@@ -1,12 +1,21 @@
 add_library(gl-lib STATIC
-    texture.cpp
+    error.cpp
+
     window/abstract_window.cpp
     window/window.cpp
+
     camera/abstract_camera.cpp
     camera/fps_camera.cpp
     camera/centered_camera.cpp
+
+    texture/texture.cpp
+    texture/loader.cpp
+
+    shader/shader.cpp
+    shader/program.cpp
     shader/loader.cpp
-    model/obj_model_loader.cpp
-    model/model.cpp
-    model/indexed_model.cpp
+
+    mesh/mesh.cpp
+    mesh/index.cpp
+    mesh/obj_loader.cpp
     )

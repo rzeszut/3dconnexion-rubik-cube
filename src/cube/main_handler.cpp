@@ -1,37 +1,37 @@
 #include <GL/glew.h>
 
-#include "gl/texture.hpp"
+#include "gl/shader/shader.hpp"
 #include "logging/logging.hpp"
-
 #include "cube/main_handler.hpp"
+
+using namespace gl::mesh;
+using namespace gl::shader;
+using namespace gl::texture;
 
 namespace cube {
 
-bool MainHandler::init(GLFWwindow *window) {
+bool MainHandler::init() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+    glfwSetInputMode(getWindowReference(), GLFW_STICKY_KEYS, GL_TRUE);
 
     // load model
-    auto cubeModel = gl::model::ObjModelLoader::fromFile("resources/cube.obj");
-    if (!cubeModel) {
-        return false;
-    }
-    cube = gl::model::IndexedModel::fromModel(std::move(cubeModel));
+    cube = Mesh::fromOBJFile("resources/cube.obj");
     if (!cube) {
         return false;
     }
     cube->init();
 
     // load shaders
-    program = gl::shader::Program::fromFiles("resources/vertex.vert", "resources/fragment.frag");
+    auto vertexShader = Shader::fromFile("resources/vertex.vert", ShaderType::VERTEX);
+    auto fragmentShader = Shader::fromFile("resources/fragment.frag", ShaderType::FRAGMENT);
+    program = Program::fromShaders({vertexShader, fragmentShader});
     if (!program) {
         return false;
     }
 
     // load texture
-    textureID = gl::texture::loadDDS("resources/uvmap.dds");
-    if (textureID == gl::texture::NULL_TEXTURE) {
-        cube->cleanup();
+    texture = Texture::fromDDSFile("resources/uvmap.dds");
+    if (!texture) {
         return false;
     }
 
@@ -49,9 +49,6 @@ bool MainHandler::init(GLFWwindow *window) {
 }
 
 void MainHandler::cleanup() {
-    glDeleteTextures(1, &textureID);
-    cube->cleanup();
-
     delete camera;
 }
 
@@ -60,7 +57,9 @@ void MainHandler::resize(int width, int height) {
     camera->resize(width, height);
 }
 
-void MainHandler::handleEvents(GLFWwindow *window) {
+void MainHandler::handleEvents() {
+    auto window = getWindowReference();
+
     // key press
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
         camera->move(gl::Direction::FORWARD);
@@ -106,20 +105,23 @@ void MainHandler::update(float delta) {
 void MainHandler::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // camera matrices
     glm::mat4 projection = camera->getProjectionMatrix();
     glm::mat4 view = camera->getViewMatrix();
-    glm::mat4 model(1.f);
-    glm::mat4 modelViewProjection = projection * view * model;
 
-    WITH_PROGRAM(*program) {
+    program->use([this, view, projection] () {
+        // model matrices
+        glm::mat4 model(1.f);
+        glm::mat4 modelViewProjection = projection * view * model;
+
         program->setUniform("MVP", modelViewProjection);
-        program->setTexture2D("textureSampler", 0, textureID);
+        program->setTexture2D("textureSampler", 0, texture->getID());
 
         program->setAttribute("vertexPosition", cube->getVertexBufferInfo());
         program->setAttribute("vertexUV", cube->getUVBufferInfo());
 
         program->drawElements(GL_TRIANGLES, cube->getElementBufferInfo());
-    }
+    });
 }
 
 }

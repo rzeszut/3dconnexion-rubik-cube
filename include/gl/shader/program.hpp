@@ -3,35 +3,47 @@
 
 #include <stack>
 #include <memory>
+#include <initializer_list>
+#include <vector>
+#include <functional>
 
 #include "GL/glew.h"
 #include "glm/glm.hpp"
 
 #include "util/preconditions.hpp"
-#include "gl/data.hpp"
-#include "loader.hpp"
+#include "gl/buffer.hpp"
 
-#define WITH_PROGRAM(prog) if (bool __p = false) {} else\
-                                          for((prog).begin();\
-                                              !__p;\
-                                              (prog).end(),\
-                                              __p = true)
+#define USING_PROGRAM(prog) if (bool __p = false) {} else\
+                                           for((prog)->begin();\
+                                               !__p;\
+                                               (prog)->end(),\
+                                               __p = true)
 
 namespace gl {
 namespace shader {
 
+class Shader;
+
 class Program {
+    static constexpr GLuint NULL_PROGRAM = 0;
+
     GLuint programID;
     std::stack<GLuint> attributes;
 
-public:
     Program(GLuint id);
+
+public:
     ~Program();
+
+    Program() = delete;
+    Program(const Program &) = delete;
+    Program &operator =(const Program &) = delete;
 
     GLuint getID() const;
 
     void begin();
     void end();
+    void use(const std::function<void ()> &function);
 
     void setUniform(const char *name, const glm::mat4 &mat);
     void setUniform(const char *name, const glm::vec3 &vec);
@@ -41,10 +53,10 @@ public:
 
     void setAttribute(const char *name, const BufferInfo &attribute);
 
-    void drawElements(GLenum mode, const ElementsInfo &elements);
+    void drawElements(GLenum mode, const ElementBufferInfo &elements);
     void drawArrays(GLenum mode, GLsizei count);
 
-    static std::unique_ptr<Program> fromFiles(const char *vertexShaderFile, const char* fragmentShaderFile);
+    static std::unique_ptr<Program> fromShaders(std::initializer_list<std::shared_ptr<Shader>> shaders);
 };
 
 // ------------------ //
@@ -72,6 +84,12 @@ inline void Program::end() {
         attributes.pop();
     }
     glUseProgram(NULL_PROGRAM);
+}
+
+inline void Program::use(const std::function<void ()> &fun) {
+    begin();
+    fun();
+    end();
 }
 
 inline void Program::setUniform(const char *name, const glm::mat4 &mat) {
@@ -107,22 +125,13 @@ inline void Program::setAttribute(const char *name, const BufferInfo &attribute)
     glVertexAttribPointer(attributeLocation, attribute.size, attribute.type, GL_FALSE, 0, 0);
 }
 
-inline void Program::drawElements(GLenum mode, const ElementsInfo &elements) {
+inline void Program::drawElements(GLenum mode, const ElementBufferInfo &elements) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements.bufferID);
     glDrawElements(mode, elements.count, elements.type, 0);
 }
 
 inline void Program::drawArrays(GLenum mode, GLsizei count) {
     glDrawArrays(mode, 0, count);
-}
-
-inline std::unique_ptr<Program> Program::fromFiles(const char *vertexShaderFile,
-                                                   const char* fragmentShaderFile) {
-    GLuint programID = loadFromFiles(vertexShaderFile, fragmentShaderFile);
-    if (programID == NULL_PROGRAM) {
-        return nullptr;
-    }
-    return std::unique_ptr<gl::shader::Program>(new gl::shader::Program(programID));
 }
 
 }

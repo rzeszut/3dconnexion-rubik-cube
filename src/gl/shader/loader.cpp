@@ -2,10 +2,10 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
-#include <vector>
 
-#include "gl/shader/loader.hpp"
 #include "logging/logging.hpp"
+#include "gl/error.hpp"
+#include "gl/shader/loader.hpp"
 
 using namespace std;
 
@@ -32,15 +32,24 @@ static vector<char> readFile(const char *filename) {
     return {};
 }
 
-static const GLuint NULL_SHADER = 0;
+GLuint loadShaderFromFile(const char *filename, GLenum type) {
+    // read the shader code from file
+    auto source = readFile(filename);
+    if (source.empty()) {
+        return NULL_SHADER;
+    }
 
-static GLuint createShader(GLenum shaderType, const char *code) {
+    return loadShaderFromSource(source.data(), type);
+}
+
+GLuint loadShaderFromSource(const char *source, GLenum type) {
     // create shader
-    GLuint shader = glCreateShader(shaderType);
+    GLuint shader = glCreateShader(type);
 
     // compile shader
-    glShaderSource(shader, 1, &code, NULL);
+    glShaderSource(shader, 1, &source, NULL);
     glCompileShader(shader);
+    logGLError();
 
     // check vertex shader
     GLint result = GL_FALSE;
@@ -58,39 +67,34 @@ static GLuint createShader(GLenum shaderType, const char *code) {
 
         // delete shader
         glDeleteShader(shader);
-        shader = NULL_SHADER;
+
+        return NULL_SHADER;
     }
 
     return shader;
 }
 
-GLuint loadFromSource(const char *vertexSource, const char *fragmentSource) {
-    // create the shaders
-    GLuint vertexShader = createShader(GL_VERTEX_SHADER, vertexSource);
-    GLuint fragmentShader = createShader(GL_FRAGMENT_SHADER, fragmentSource);
+GLuint compileProgram(const std::vector<GLuint> &shaders) {
+    GLuint program = glCreateProgram();
 
-    // check for errors in shader compilation
-    if (vertexShader == NULL_SHADER) {
-        return NULL_PROGRAM;
-    }
-    if (fragmentShader == NULL_SHADER) {
-        glDeleteShader(vertexShader);
-        return NULL_PROGRAM;
+    // attach shaders to the program
+    for (auto &it : shaders) {
+        if (it == NULL_SHADER) {
+            glDeleteProgram(program);
+            return NULL_PROGRAM;
+        }
+        glAttachShader(program, it);
+        logGLError();
     }
 
     // link the program
-    GLuint program = glCreateProgram();
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
     glLinkProgram(program);
+    logGLError();
 
-    // mark shaders for deletion
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    // detach them from the program
-    glDetachShader(program, vertexShader);
-    glDetachShader(program, fragmentShader);
+    // detach shaders from the program
+    for (auto &it : shaders) {
+        glDetachShader(program, it);
+    }
 
     // check the program
     GLint result = GL_FALSE;
@@ -106,28 +110,11 @@ GLuint loadFromSource(const char *vertexSource, const char *fragmentSource) {
         glGetProgramInfoLog(program, infoLogLength, NULL, &programErrorMessages[0]);
         LOG(ERROR) << &programErrorMessages[0];
 
-        // delete program
         glDeleteProgram(program);
-        program = NULL_PROGRAM;
+        return NULL_PROGRAM;
     }
 
     return program;
-}
-
-GLuint loadFromFiles(const char *vertexFilePath, const char *fragmentFilePath) {
-    // read the vertex shader code from file
-    auto vertexShaderCode = readFile(vertexFilePath);
-    if (vertexShaderCode.empty()) {
-        return NULL_PROGRAM;
-    }
-
-    // read the fragment shader code from file
-    auto fragmentShaderCode = readFile(fragmentFilePath);
-    if (fragmentShaderCode.empty()) {
-        return NULL_PROGRAM;
-    }
-
-    return loadFromSource(vertexShaderCode.data(), fragmentShaderCode.data());
 }
 
 }

@@ -15,7 +15,9 @@ bool Window::init() {
     }
 
     CHECK_NOT_NULL(handler, "Must set handler before using the window.");
-    ok = handler->init(getGLFWwindow());
+    handler->windowReference = getGLFWwindow();
+
+    ok = handler->init();
     if (!ok) {
         AbstractWindow::cleanup();
     }
@@ -47,7 +49,7 @@ void Window::handleEvents() {
         toggleFullscreen();
     }
 
-    handler->handleEvents(window);
+    handler->handleEvents();
 
     // mouse
     static bool mousePositionHack = true;

@@ -5,9 +5,9 @@
 
 #include "gl/window/window_handler.hpp"
 #include "gl/camera/centered_camera.hpp"
-#include "gl/model/obj_model_loader.hpp"
-#include "gl/model/indexed_model.hpp"
+#include "gl/mesh/mesh.hpp"
 #include "gl/shader/program.hpp"
+#include "gl/texture/texture.hpp"
 
 namespace cube {
 
@@ -15,21 +15,20 @@ const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
 class MainHandler : public gl::WindowHandler {
-    std::unique_ptr<gl::model::IndexedModel> cube;
+    std::unique_ptr<gl::mesh::Mesh> cube;
     std::unique_ptr<gl::shader::Program> program;
-
-    GLuint textureID;
+    std::unique_ptr<gl::texture::Texture> texture;
 
     gl::CenteredCamera *camera;
 
 public:
-    bool init(GLFWwindow *window) override;
+    bool init() override;
 
     void cleanup() override;
 
     void resize(int width, int height) override;
 
-    void handleEvents(GLFWwindow *window) override;
+    void handleEvents() override;
 
     void mouseMove(float x, float y) override;
 
