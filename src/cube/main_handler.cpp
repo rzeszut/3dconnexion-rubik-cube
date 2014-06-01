@@ -83,46 +83,25 @@ void MainHandler::handleEvents() {
     }
 }
 
-void MainHandler::mouseMove(float x, float y) {
-    // FIXME: change mouse state to mouse event
-    if (glfwGetMouseButton(getWindowReference(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-
-        // same bounding box for all cubes
-        gl::picking::AABB aabb(glm::vec3(-1, -1, -1), glm::vec3(1, 1, 1));
+void MainHandler::mouseButton(gl::MouseButton button, gl::MouseState state, float x, float y) {
+    if (button == gl::MouseButton::LEFT && state == gl::MouseState::RELEASED) {
         auto ray = gl::picking::Ray::fromScreenPosition(
             x, y, width, height,
             camera->getViewMatrix(), camera->getProjectionMatrix());
 
-        // a list of all matched pairs: distance, coords of the cube
-        std::list<std::pair<float, Coords>> matched;
-        for (int i : {-1, 0, 1}) {
-            for (int j : {-1, 0, 1}) {
-                for (int k : {-1, 0, 1}) {
-                    auto &model = cube.getModelMatrix(i, j, k);
-                    auto result = gl::picking::testRayOBBIntersection(ray, aabb, model);
-
-                    if (result.first) {
-                        matched.push_back(std::make_pair(result.second, std::make_tuple(i, j, k)));
-                    }
-                }
-            }
-        }
-
-        // sort by distances
-        matched.sort([] (std::pair<float, Coords> o1, std::pair<float, Coords> o2) {
-            return o1.first < o2.first;
-        });
-
-        // the first once (the closes one was clicked)
-        if (!matched.empty()) {
-            auto picked = matched.front().second;
-            LOG(DEBUG) << "Picked cube " << picked;
-        }
+        auto result = cube.testRayIntersection(ray);
     }
+}
+
+void MainHandler::mouseMove(float, float) {
 }
 
 void MainHandler::update(float delta) {
     camera->update(delta);
+
+    // 90 degrees per second
+    static float halfPi = 3.1415926536 / 2.f;
+    cube.rotateX(-1, delta * halfPi);
 }
 
 void MainHandler::render() {

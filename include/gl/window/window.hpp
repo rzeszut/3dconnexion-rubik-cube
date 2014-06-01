@@ -1,8 +1,11 @@
 #ifndef WINDOW_HPP_Z9O3Z851
 #define WINDOW_HPP_Z9O3Z851
 
+#include <map>
+
 #include "abstract_window.hpp"
 #include "window_handler.hpp"
+#include "mouse.hpp"
 
 namespace gl {
 
@@ -13,6 +16,14 @@ private:
     WindowHandler *handler;
     bool running;
     int framesPerSecond = DEFAULT_FPS;
+
+    std::map<MouseButton, MouseState> mouseButtonStates {
+        {MouseButton::LEFT, MouseState::RELEASED},
+        {MouseButton::MIDDLE, MouseState::RELEASED},
+        {MouseButton::RIGHT, MouseState::RELEASED}
+    };
+
+    void handleMouseButtonChanges(MouseButton button, float x, float y);
 
 public:
     Window(int width, int height, const char *title, WindowHandler *handler);

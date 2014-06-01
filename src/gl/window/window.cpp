@@ -51,7 +51,7 @@ void Window::handleEvents() {
 
     handler->handleEvents();
 
-    // mouse
+    // mouse move
     static bool mousePositionHack = true;
     static int passedIterations = 0;
 
@@ -70,6 +70,24 @@ void Window::handleEvents() {
     }
 
     handler->mouseMove(x, y);
+
+    // mouse buttons
+    for (const auto &it : mouseButtonStates) {
+        handleMouseButtonChanges(it.first, x, y);
+    }
+}
+
+void Window::handleMouseButtonChanges(MouseButton button, float x, float y) {
+    auto buttonState = glfwGetMouseButton(getGLFWwindow(), (int) button);
+    auto previousButtonState = mouseButtonStates[button];
+
+    if (buttonState == GLFW_PRESS && previousButtonState == MouseState::RELEASED) {
+        mouseButtonStates[button] = MouseState::PRESSED;
+        handler->mouseButton(button, MouseState::PRESSED, x, y);
+    } else if (buttonState == GLFW_RELEASE && previousButtonState == MouseState::PRESSED) {
+        mouseButtonStates[button] = MouseState::RELEASED;
+        handler->mouseButton(button, MouseState::RELEASED, x, y);
+    }
 }
 
 void Window::update(float delta) {
@@ -77,9 +95,6 @@ void Window::update(float delta) {
 }
 
 void Window::render() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
-
     handler->render();
 
     glfwSwapBuffers(getGLFWwindow());

@@ -3,6 +3,8 @@
 
 #include "GLFW/glfw3.h"
 
+#include "mouse.hpp"
+
 namespace gl {
 
 class WindowHandler {
@@ -25,6 +27,8 @@ public:
     virtual void handleEvents() = 0;
 
     virtual void mouseMove(float x, float y) = 0;
+
+    virtual void mouseButton(MouseButton button, MouseState state, float x, float y) = 0;
 
     virtual void update(float delta) = 0;
 

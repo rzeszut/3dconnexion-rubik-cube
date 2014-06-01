@@ -30,6 +30,8 @@ public:
 
     void mouseMove(float x, float y) override;
 
+    void mouseButton(gl::MouseButton button, gl::MouseState state, float x, float y);
+
     void update(float delta) override;
 
     void render() override;
