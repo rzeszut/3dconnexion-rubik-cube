@@ -58,6 +58,15 @@ Run the program:
 
     ./run.bat
 
+Usage
+-----
+
++ W, A, S, D -- moving the cube around
++ Up, Down -- zoom in/zoom out
++ E, Q -- rotate selected face
++ left mouse button -- select face: you need to select three mini-cubes lying on the same face
++ right mouse button -- cancel selection; exit rotation
+
 Problems
 --------
 

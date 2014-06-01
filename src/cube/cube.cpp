@@ -81,8 +81,10 @@ Optional<Coords> Cube::testRayIntersection(const gl::picking::Ray &ray) {
     std::list<std::pair<float, Coords>> matched;
 
     for (int i = 0; i < NUMBER_OF_CUBES; ++i) {
-        // FIXME: actual position, rotation included
-        auto &model = modelMatrices.at(i);
+        // actual position, rotation included
+        const auto &modelMatrix = modelMatrices.at(i);
+        const auto &modelRotation = rotations.at(i);
+        const auto model = glm::toMat4(modelRotation) * modelMatrix;
         auto result = gl::picking::testRayOBBIntersection(ray, aabb, model);
 
         if (result) {
@@ -185,13 +187,13 @@ Optional<pair<Axis, int>> findCommonAxis(const Coords &c1,
     bool commonZ = compareCoords<2>(c1, c2, c3);
 
     if (commonX && !commonY && !commonZ) {
-        return Optional<pair<Axis, int>>(make_pair(Axis::X, std::get<0>(c1)));
+        return Optional<pair<Axis, int>>(Axis::X, std::get<0>(c1));
     }
     if (!commonX && commonY && !commonZ) {
-        return Optional<pair<Axis, int>>(make_pair(Axis::Y, std::get<1>(c1)));
+        return Optional<pair<Axis, int>>(Axis::Y, std::get<1>(c1));
     }
     if (!commonX && !commonY && commonZ) {
-        return Optional<pair<Axis, int>>(make_pair(Axis::Z, std::get<2>(c1)));
+        return Optional<pair<Axis, int>>(Axis::Z, std::get<2>(c1));
     }
     return Optional<std::pair<Axis, int>>();
 }
