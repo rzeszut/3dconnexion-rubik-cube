@@ -7,6 +7,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
 
+#include "util/optional.hpp"
 #include "gl/mesh/mesh.hpp"
 #include "gl/shader/program.hpp"
 #include "gl/texture/texture.hpp"
@@ -14,7 +15,17 @@
 
 namespace cube {
 
+constexpr int NUMBER_OF_CUBES = 3 * 3 * 3;
+
 typedef std::tuple<int, int, int> Coords;
+
+enum class Axis {
+    X, Y, Z
+};
+
+optional::Optional<std::pair<Axis, int>> findCommonAxis(const Coords &c1,
+                                                        const Coords &c2,
+                                                        const Coords &c3);
 
 class Cube {
 private:
@@ -22,22 +33,25 @@ private:
     std::unique_ptr<gl::shader::Program> program;
     std::unique_ptr<gl::texture::Texture> texture;
 
-    std::array<glm::mat4, 3 * 3 * 3> modelMatrices;
-    std::array<glm::quat, 3 * 3 * 3> rotations;
+    std::array<glm::mat4, NUMBER_OF_CUBES> modelMatrices;
+    std::array<glm::quat, NUMBER_OF_CUBES> rotations;
 
+private:
     int getID(int i, int j, int k) const;
     Coords getCoords(int id) const;
+
+    void rotateX(int x, float angle);
+    void rotateY(int y, float angle);
+    void rotateZ(int z, float angle);
 
 public:
     void init();
 
     void render(const glm::mat4 &view, const glm::mat4 &projection);
 
-    std::pair<bool, Coords> testRayIntersection(const gl::picking::Ray &ray);
+    optional::Optional<Coords> testRayIntersection(const gl::picking::Ray &ray);
 
-    void rotateX(int x, float angle);
-    void rotateY(int y, float angle);
-    void rotateZ(int a, float angle);
+    void rotate(Axis axis, int coord, float angle);
 };
 
 std::ostream & operator<<(std::ostream &stream, const Coords &coords);

@@ -19,6 +19,14 @@ class MainHandler : public gl::WindowHandler {
     int width = WINDOW_WIDTH;
     int height = WINDOW_HEIGHT;
 
+    optional::Optional<Coords> coords1;
+    optional::Optional<Coords> coords2;
+    optional::Optional<Coords> coords3;
+
+    bool rotationEnabled = false;
+    std::pair<Axis, int> rotation;
+    int rotationDirection = 0;
+
 public:
     bool init() override;
 

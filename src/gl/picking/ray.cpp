@@ -4,6 +4,7 @@
 #include "gl/picking/ray.hpp"
 
 using namespace glm;
+using namespace optional;
 
 namespace gl {
 namespace picking {
@@ -39,10 +40,10 @@ Ray Ray::fromScreenPosition(float x, float y,
     return ray;
 }
 
-std::pair<bool, float> testRayOBBIntersection(const Ray &ray,
-                                              const AABB &aabb,
-                                              const glm::mat4 &model
-                                             ) {
+Optional<float> testRayOBBIntersection(const Ray &ray,
+                                       const AABB &aabb,
+                                       const glm::mat4 &model
+                                      ) {
     float distanceMin = 0.f;
     float distanceMax = 100000.f;
 
@@ -73,11 +74,11 @@ std::pair<bool, float> testRayOBBIntersection(const Ray &ray,
             }
 
             if (distanceMax < distanceMin) {
-                return {false, 0};
+                return Optional<float>();
             }
         } else if (aabb.min.x - e > 0.0f || aabb.max.x < 0.f) {
             // ray is almost parallel to the planes
-            return {false, 0};
+            return Optional<float>();
         }
     }
 
@@ -103,11 +104,11 @@ std::pair<bool, float> testRayOBBIntersection(const Ray &ray,
             }
 
             if (distanceMax < distanceMin) {
-                return {false, 0};
+                return Optional<float>();
             }
         } else if (aabb.min.y - e > 0.0f || aabb.max.y < 0.f) {
             // ray is almost parallel to the planes
-            return {false, 0};
+            return Optional<float>();
         }
     }
 
@@ -133,15 +134,15 @@ std::pair<bool, float> testRayOBBIntersection(const Ray &ray,
             }
 
             if (distanceMax < distanceMin) {
-                return {false, 0};
+                return Optional<float>();
             }
         } else if (aabb.min.z - e > 0.0f || aabb.max.z < 0.f) {
             // ray is almost parallel to the planes
-            return {false, 0};
+            return Optional<float>();
         }
     }
 
-    return {true, distanceMin};
+    return Optional<float>(distanceMin);
 }
 
 }

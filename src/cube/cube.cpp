@@ -5,12 +5,15 @@
 #include "glm/gtx/quaternion.hpp"
 
 #include "logging/logging.hpp"
+#include "util/preconditions.hpp"
 #include "gl/shader/shader.hpp"
 #include "cube/cube.hpp"
 
 using namespace gl::mesh;
 using namespace gl::shader;
 using namespace gl::texture;
+using namespace optional;
+using namespace std;
 
 namespace cube {
 
@@ -51,7 +54,7 @@ void Cube::init() {
 }
 
 void Cube::render(const glm::mat4 &view, const glm::mat4 &projection) {
-    for (int i = 0; i < 3 * 3 * 3; ++i) {
+    for (int i = 0; i < NUMBER_OF_CUBES; ++i) {
         const auto &modelMatrix = modelMatrices.at(i);
         const auto &modelRotation = rotations.at(i);
         const auto model = glm::toMat4(modelRotation) * modelMatrix;
@@ -70,22 +73,22 @@ void Cube::render(const glm::mat4 &view, const glm::mat4 &projection) {
     }
 }
 
-std::pair<bool, Coords> Cube::testRayIntersection(const gl::picking::Ray &ray) {
+Optional<Coords> Cube::testRayIntersection(const gl::picking::Ray &ray) {
     // same bounding box for all cubes
     static gl::picking::AABB aabb(glm::vec3(-1, -1, -1), glm::vec3(1, 1, 1));
 
     // a list of all matched pairs: distance, coords of the cube
     std::list<std::pair<float, Coords>> matched;
 
-    for (int i = 0; i < 3 * 3 * 3; ++i) {
+    for (int i = 0; i < NUMBER_OF_CUBES; ++i) {
         // FIXME: actual position, rotation included
         auto &model = modelMatrices.at(i);
         auto result = gl::picking::testRayOBBIntersection(ray, aabb, model);
 
-        if (result.first) {
+        if (result) {
             auto coords = getCoords(i);
-            matched.push_back(std::make_pair(result.second, coords));
-            LOG(DEBUG) << "Matched cube " << coords << ", distance: " << result.second;
+            matched.push_back(std::make_pair(result.get(), coords));
+            LOG(DEBUG) << "Matched cube " << coords << ", distance: " << result.get();
         }
     }
 
@@ -98,10 +101,27 @@ std::pair<bool, Coords> Cube::testRayIntersection(const gl::picking::Ray &ray) {
     if (!matched.empty()) {
         auto picked = matched.front().second;
         LOG(DEBUG) << "Picked cube " << picked;
-        return {true, picked};
+        return Optional<Coords>(picked);
     }
 
-    return {false, Coords()};
+    return Optional<Coords>();
+}
+
+void Cube::rotate(Axis axis, int coord, float angle) {
+    CHECK(coord >= -1 && coord <= 1, "Coord mus be -1, 0 or 1");
+
+    switch(axis) {
+    case Axis::X:
+        rotateX(coord, angle);
+        break;
+
+    case Axis::Y:
+        rotateY(coord, angle);
+        break;
+
+    case Axis::Z:
+        rotateZ(coord, angle);
+    }
 }
 
 // FIXME: code duplication
@@ -142,6 +162,38 @@ void Cube::rotateZ(int z, float angle) {
             modelRotation = newRotation * modelRotation;
         }
     }
+}
+
+template <int N>
+static bool compareCoords(const Coords &c1,
+                          const Coords &c2,
+                          const Coords &c3) {
+    return std::get<N>(c1) == std::get<N>(c2) &&
+        std::get<N>(c2) == std::get<N>(c3) &&
+        std::get<N>(c1) == std::get<N>(c3);
+}
+
+Optional<pair<Axis, int>> findCommonAxis(const Coords &c1,
+                                         const Coords &c2,
+                                         const Coords &c3) {
+    if (c1 == c2 || c2 == c3 || c1 == c3) {
+        return Optional<std::pair<Axis, int>>();
+    }
+
+    bool commonX = compareCoords<0>(c1, c2, c3);
+    bool commonY = compareCoords<1>(c1, c2, c3);
+    bool commonZ = compareCoords<2>(c1, c2, c3);
+
+    if (commonX && !commonY && !commonZ) {
+        return Optional<pair<Axis, int>>(make_pair(Axis::X, std::get<0>(c1)));
+    }
+    if (!commonX && commonY && !commonZ) {
+        return Optional<pair<Axis, int>>(make_pair(Axis::Y, std::get<1>(c1)));
+    }
+    if (!commonX && !commonY && commonZ) {
+        return Optional<pair<Axis, int>>(make_pair(Axis::Z, std::get<2>(c1)));
+    }
+    return Optional<std::pair<Axis, int>>();
 }
 
 }

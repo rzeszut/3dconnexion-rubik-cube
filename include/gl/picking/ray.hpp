@@ -5,6 +5,7 @@
 
 #include "glm/glm.hpp"
 
+#include "util/optional.hpp"
 #include "aabb.hpp"
 
 namespace gl {
@@ -21,10 +22,10 @@ struct Ray {
                                  );
 };
 
-std::pair<bool, float> testRayOBBIntersection(const Ray &ray,
-                                              const AABB &aabb,
-                                              const glm::mat4 &model
-                                             );
+optional::Optional<float> testRayOBBIntersection(const Ray &ray,
+                                                 const AABB &aabb,
+                                                 const glm::mat4 &model
+                                                );
 
 }
 }
