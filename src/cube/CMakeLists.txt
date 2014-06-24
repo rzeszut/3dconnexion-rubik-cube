@@ -4,8 +4,11 @@ find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
 
 add_executable(cube
-    main.cpp
-    main_handler.cpp
+    	main.cpp
+    	main_handler.cpp
+	util.cpp
+	cube.cpp
+	piece.cpp
     )
 
 target_link_libraries(cube logging)
