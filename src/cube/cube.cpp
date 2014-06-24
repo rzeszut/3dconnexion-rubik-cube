@@ -4,6 +4,8 @@
 #include <math.h>
 #include <float.h>
 
+#include "GL/glew.h"
+#include "glm/gtc/type_ptr.hpp"
 #include "cube.h"
 #include "vec2f.h"
 
@@ -11,16 +13,11 @@
 
 #define ALMOST_ZERO   1e-6f
 
-
-
-
 WCube::WCube(CWnd* pWnd)
 : m_pWnd(pWnd)
 {
    memset(m_pPieces, 0, sizeof(WCubePiece*)*3*3*3);
 }
-
-
 
 WCube::~WCube()
 {
@@ -34,14 +31,10 @@ WCube::~WCube()
    }
 }
 
-
-
 void WCube::init(void)
 {
    reset();
 }
-
-
 
 void WCube::draw(void)
 {
@@ -56,8 +49,6 @@ void WCube::draw(void)
    }
 }
 
-
-
 void WCube::reset(void)
 {
    for (int x=0; x<3; x++) {
@@ -66,35 +57,31 @@ void WCube::reset(void)
             if (m_pPieces[x][y][z])
                delete m_pPieces[x][y][z];
 
-            m_pPieces[x][y][z] = new WCubePiece(BYTEVEC(x-1, y-1, z-1));
+            m_pPieces[x][y][z] = new WCubePiece(glm::ivec3(x-1, y-1, z-1));
          }
       }
    }
 
 }
 
-
-BOOL WCube::rotate(GLdouble* mxProjection, GLdouble* mxModel, GLint* nViewPort, 
-                   CPoint& wndSize, CPoint& ptMouseWnd, CPoint& ptLastMouseWnd)
+bool WCube::rotate(glm::mat4 mxProjection, glm::mat4 mxModel, glm::mat4 mxView, glm::vec4 nViewport, 
+				   glm::vec2 wndSize, glm::vec2 ptMouseWnd, glm::vec2 ptLastMouseWnd)
 {
-   CPoint ptMouse(ptMouseWnd.x, wndSize.y-ptMouseWnd.y);
-   CPoint ptLastMouse(ptLastMouseWnd.x, wndSize.y-ptLastMouseWnd.y);
+   glm::vec2 ptMouse(ptMouseWnd.x, wndSize.y-ptMouseWnd.y);
+   glm::vec2 ptLastMouse(ptLastMouseWnd.x, wndSize.y-ptLastMouseWnd.y);
  
-   PT3D vCubeCorner[8];
+   glm::vec3 vCubeCorner[8];
 
    // use glm::project instead of gluProject
-   gluProject( 1.5, 1.5, 1.5, mxModel, mxProjection, nViewPort, &vCubeCorner[0].x, &vCubeCorner[0].y, &vCubeCorner[0].z);
-   gluProject( 1.5,-1.5, 1.5, mxModel, mxProjection, nViewPort, &vCubeCorner[1].x, &vCubeCorner[1].y, &vCubeCorner[1].z);
-   gluProject(-1.5,-1.5, 1.5, mxModel, mxProjection, nViewPort, &vCubeCorner[2].x, &vCubeCorner[2].y, &vCubeCorner[2].z);
-   gluProject(-1.5, 1.5, 1.5, mxModel, mxProjection, nViewPort, &vCubeCorner[3].x, &vCubeCorner[3].y, &vCubeCorner[3].z);
+   vCubeCorner[0] = glm::project(glm::vec3(1.5, 1.5, 1.5), mxView*mxModel, mxProjection, nViewport);
+   vCubeCorner[1] = glm::project(glm::vec3(1.5,-1.5, 1.5), mxView*mxModel, mxProjection, nViewport);
+   vCubeCorner[2] = glm::project(glm::vec3(-1.5,-1.5, 1.5), mxView*mxModel, mxProjection, nViewport);
+   vCubeCorner[3] = glm::project(glm::vec3(-1.5, 1.5, 1.5), mxView*mxModel, mxProjection, nViewport);
 
-
-   gluProject( 1.5, 1.5,-1.5, mxModel, mxProjection, nViewPort, &vCubeCorner[4].x, &vCubeCorner[4].y, &vCubeCorner[4].z);
-   gluProject( 1.5,-1.5,-1.5, mxModel, mxProjection, nViewPort, &vCubeCorner[5].x, &vCubeCorner[5].y, &vCubeCorner[5].z);
-   gluProject(-1.5,-1.5,-1.5, mxModel, mxProjection, nViewPort, &vCubeCorner[6].x, &vCubeCorner[6].y, &vCubeCorner[6].z);
-   gluProject(-1.5, 1.5,-1.5, mxModel, mxProjection, nViewPort, &vCubeCorner[7].x, &vCubeCorner[7].y, &vCubeCorner[7].z);
-
-
+   vCubeCorner[4] = glm::project(glm::vec3(1.5, 1.5,-1.5), mxView*mxModel, mxProjection, nViewport);
+   vCubeCorner[5] = glm::project(glm::vec3(1.5,-1.5,-1.5), mxView*mxModel, mxProjection, nViewport);
+   vCubeCorner[6] = glm::project(glm::vec3(-1.5,-1.5,-1.5), mxView*mxModel, mxProjection, nViewport);
+   vCubeCorner[7] = glm::project(glm::vec3(-1.5, 1.5,-1.5), mxView*mxModel, mxProjection, nViewport);
 
 
    //Find the min/max X and Y to do a rough bounding box test.
@@ -107,7 +94,6 @@ BOOL WCube::rotate(GLdouble* mxProjection, GLdouble* mxModel, GLint* nViewPort,
       yMax = max(yMax, (float)vCubeCorner[i].y);
    }
 
-
    //Check if point was outside rough test and return if it was.
    if (!(xMin <= ptLastMouse.x && ptLastMouse.x <= xMax
          && yMin <= ptLastMouse.y && ptLastMouse.y <= yMax))
@@ -115,9 +101,7 @@ BOOL WCube::rotate(GLdouble* mxProjection, GLdouble* mxModel, GLint* nViewPort,
       return false;        //Failed rough bounding box test
    }
 
-
-
-   PT3D vCorner[6][4] = {
+   glm::vec3 vCorner[6][4] = {
       {vCubeCorner[5], vCubeCorner[1], vCubeCorner[0], vCubeCorner[4]},    //Right
       {vCubeCorner[6], vCubeCorner[2], vCubeCorner[3], vCubeCorner[7]},    //Left
       {vCubeCorner[7], vCubeCorner[4], vCubeCorner[0], vCubeCorner[3]},    //Top
@@ -144,25 +128,20 @@ BOOL WCube::rotate(GLdouble* mxProjection, GLdouble* mxModel, GLint* nViewPort,
    if (nSide==-1) 
       return FALSE;        //Missed all the sides.
 
-
-
-
-
-   Vec2f vX(
+   glm::vec2 vX(
       (float)(vCorner[nSide][1].x - vCorner[nSide][0].x),
       (float)(vCorner[nSide][1].y - vCorner[nSide][0].y)
    );
 
-   Vec2f vY(
+   glm::vec2 vY(
       (float)(vCorner[nSide][2].x - vCorner[nSide][1].x),
       (float)(vCorner[nSide][2].y - vCorner[nSide][1].y)
    );
 
-   Vec2f vMouse(
+   glm::vec2 vMouse(
       (float)(ptMouse.x - ptLastMouse.x), 
       (float)(ptMouse.y - ptLastMouse.y)
    );
-
 
    //angle between the mouse vector and the 
    //X/Y vector for this cube side.
@@ -170,12 +149,11 @@ BOOL WCube::rotate(GLdouble* mxProjection, GLdouble* mxModel, GLint* nViewPort,
    vY.normalize();
    vMouse.normalize();
 
-   float xDiff = Vec2f::getAngle(vX, vMouse);
-   float yDiff = Vec2f::getAngle(vY, vMouse);
+   float xDiff = glm::vec2 glm::getAngle(vX, vMouse);
+   float yDiff = glm::vec2 glm::getAngle(vY, vMouse);
    float minDiff = (float)min(min(min(fabs(xDiff), fabs(yDiff)), fabs(xDiff-180)), fabs(yDiff-180));
 
-
-   INT8 nSection;
+   int nSection;
 
    minDiff += ALMOST_ZERO;       
 
@@ -231,10 +209,7 @@ BOOL WCube::rotate(GLdouble* mxProjection, GLdouble* mxModel, GLint* nViewPort,
    return TRUE;      
 }
 
-
-
-
-void WCube::animateRotation(WCubePiece* piece[], int ctPieces, Vec3f v, float fAngle)
+void WCube::animateRotation(WCubePiece* piece[], int ctPieces, glm::vec3 v, float fAngle)
 {
    int x;
 
@@ -254,11 +229,7 @@ void WCube::animateRotation(WCubePiece* piece[], int ctPieces, Vec3f v, float fA
       piece[x]->clrRotation();
 }
 
-
-
-
-
-void WCube::rotateXSection(INT8 nSection, BOOL bCW, BOOL bAnimate, BOOL bRecord)
+void WCube::rotateXSection(int nSection, bool bCW, bool bAnimate, bool bRecord)
 {
    WCubePiece* pTmp;
    int i;
@@ -279,7 +250,7 @@ void WCube::rotateXSection(INT8 nSection, BOOL bCW, BOOL bAnimate, BOOL bRecord)
 
    float fAngle = bCW ? 90.0f : -90.0f;
    if (bAnimate) 
-      animateRotation(pieces, ELEMENTS_OF(pieces), Vec3f(1,0,0), fAngle);
+      animateRotation(pieces, ELEMENTS_OF(pieces), glm::vec3(1,0,0), fAngle);
 
    for (i=0; i<ELEMENTS_OF(pieces); i++) 
       pieces[i]->rotateX(bCW);
@@ -315,7 +286,7 @@ void WCube::rotateXSection(INT8 nSection, BOOL bCW, BOOL bAnimate, BOOL bRecord)
 
 }
 
-void WCube::rotateYSection(INT8 nSection, BOOL bCW, BOOL bAnimate, BOOL bRecord)
+void WCube::rotateYSection(int nSection, bool bCW, bool bAnimate, bool bRecord)
 {
    WCubePiece* pTmp;
    int i;
@@ -336,7 +307,7 @@ void WCube::rotateYSection(INT8 nSection, BOOL bCW, BOOL bAnimate, BOOL bRecord)
 
    float fAngle = bCW ? 90.0f : -90.0f;
    if (bAnimate) 
-      animateRotation(pieces, ELEMENTS_OF(pieces), Vec3f(0,1,0), fAngle);
+      animateRotation(pieces, ELEMENTS_OF(pieces), glm::vec3(0,1,0), fAngle);
 
 
    for (i=0; i<ELEMENTS_OF(pieces); i++) 
@@ -372,7 +343,7 @@ void WCube::rotateYSection(INT8 nSection, BOOL bCW, BOOL bAnimate, BOOL bRecord)
 
 }
 
-void WCube::rotateZSection(INT8 nSection, BOOL bCW, BOOL bAnimate, BOOL bRecord)
+void WCube::rotateZSection(int nSection, bool bCW, bool bAnimate, bool bRecord)
 {
    WCubePiece* pTmp;
    int i;
@@ -393,7 +364,7 @@ void WCube::rotateZSection(INT8 nSection, BOOL bCW, BOOL bAnimate, BOOL bRecord)
 
    float fAngle = bCW ? 90.0f : -90.0f;
    if (bAnimate) 
-      animateRotation(pieces, ELEMENTS_OF(pieces), Vec3f(0,0,1), fAngle);
+      animateRotation(pieces, ELEMENTS_OF(pieces), glm::vec3(0,0,1), fAngle);
 
 
    for (i=0; i<ELEMENTS_OF(pieces); i++) 
