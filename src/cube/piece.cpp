@@ -3,25 +3,25 @@
 #include "cube/piece.h"
 
 
-WCubePiece::WCubePiece(const glm::ivec3 &posHome) :
+CubePiece::CubePiece(const glm::ivec3 &posHome) :
     m_posHome(posHome), m_fRotationAngle(0), m_vRotation(0,0,0)
 {
-    m_nSideColor[SD_RIGHT]  = posHome.x== 1 ? WHITE  : BLACK;
-    m_nSideColor[SD_LEFT]   = posHome.x==-1 ? BLUE   : BLACK;
-    m_nSideColor[SD_TOP]    = posHome.y== 1 ? GREEN  : BLACK;
-    m_nSideColor[SD_BOTTOM] = posHome.y==-1 ? ORANGE : BLACK;
-    m_nSideColor[SD_FRONT]  = posHome.z== 1 ? RED    : BLACK;
-    m_nSideColor[SD_BACK]   = posHome.z==-1 ? YELLOW : BLACK;
+    m_SideColor[SD_RIGHT]  = posHome.x== 1 ? WHITE  : BLACK;
+    m_SideColor[SD_LEFT]   = posHome.x==-1 ? BLUE   : BLACK;
+    m_SideColor[SD_TOP]    = posHome.y== 1 ? GREEN  : BLACK;
+    m_SideColor[SD_BOTTOM] = posHome.y==-1 ? ORANGE : BLACK;
+    m_SideColor[SD_FRONT]  = posHome.z== 1 ? RED    : BLACK;
+    m_SideColor[SD_BACK]   = posHome.z==-1 ? YELLOW : BLACK;
 }
 
 
-WCubePiece::~WCubePiece()
+CubePiece::~CubePiece()
 {
 }
 
 
 
-void WCubePiece::draw(int x, int y, int z)
+void CubePiece::draw(int x, int y, int z)
 {
     glPushMatrix();
     if (m_fRotationAngle)
@@ -103,66 +103,66 @@ void WCubePiece::draw(int x, int y, int z)
 
 
 
-void WCubePiece::rotateX(bool bCW)
+void CubePiece::rotateX(bool bCW)
 {
     SIDECOLOR nTmp;
 
     if (bCW) {
-        nTmp                    = m_nSideColor[SD_TOP];
-        m_nSideColor[SD_TOP]    = m_nSideColor[SD_BACK];
-        m_nSideColor[SD_BACK]   = m_nSideColor[SD_BOTTOM];
-        m_nSideColor[SD_BOTTOM] = m_nSideColor[SD_FRONT];
-        m_nSideColor[SD_FRONT]  = nTmp;
+        nTmp                    = m_SideColor[SD_TOP];
+        m_SideColor[SD_TOP]    = m_SideColor[SD_BACK];
+        m_SideColor[SD_BACK]   = m_SideColor[SD_BOTTOM];
+        m_SideColor[SD_BOTTOM] = m_SideColor[SD_FRONT];
+        m_SideColor[SD_FRONT]  = nTmp;
     }
     else {
-        nTmp                    = m_nSideColor[SD_TOP];
-        m_nSideColor[SD_TOP]    = m_nSideColor[SD_FRONT];
-        m_nSideColor[SD_FRONT]  = m_nSideColor[SD_BOTTOM];
-        m_nSideColor[SD_BOTTOM] = m_nSideColor[SD_BACK];
-        m_nSideColor[SD_BACK]   = nTmp;
+        nTmp                    = m_SideColor[SD_TOP];
+        m_SideColor[SD_TOP]    = m_SideColor[SD_FRONT];
+        m_SideColor[SD_FRONT]  = m_SideColor[SD_BOTTOM];
+        m_SideColor[SD_BOTTOM] = m_SideColor[SD_BACK];
+        m_SideColor[SD_BACK]   = nTmp;
     }
 }
 
 
 
-void WCubePiece::rotateY(bool bCW)
+void CubePiece::rotateY(bool bCW)
 {
     SIDECOLOR nTmp;
 
     if (bCW) {
-        nTmp                    = m_nSideColor[SD_FRONT];
-        m_nSideColor[SD_FRONT]  = m_nSideColor[SD_LEFT];
-        m_nSideColor[SD_LEFT]   = m_nSideColor[SD_BACK];
-        m_nSideColor[SD_BACK]   = m_nSideColor[SD_RIGHT];
-        m_nSideColor[SD_RIGHT]  = nTmp;
+        nTmp                    = m_SideColor[SD_FRONT];
+        m_SideColor[SD_FRONT]  = m_SideColor[SD_LEFT];
+        m_SideColor[SD_LEFT]   = m_SideColor[SD_BACK];
+        m_SideColor[SD_BACK]   = m_SideColor[SD_RIGHT];
+        m_SideColor[SD_RIGHT]  = nTmp;
     }
     else {
-        nTmp                    = m_nSideColor[SD_FRONT];
-        m_nSideColor[SD_FRONT]  = m_nSideColor[SD_RIGHT];
-        m_nSideColor[SD_RIGHT]  = m_nSideColor[SD_BACK];
-        m_nSideColor[SD_BACK]   = m_nSideColor[SD_LEFT];
-        m_nSideColor[SD_LEFT]   = nTmp;
+        nTmp                    = m_SideColor[SD_FRONT];
+        m_SideColor[SD_FRONT]  = m_SideColor[SD_RIGHT];
+        m_SideColor[SD_RIGHT]  = m_SideColor[SD_BACK];
+        m_SideColor[SD_BACK]   = m_SideColor[SD_LEFT];
+        m_SideColor[SD_LEFT]   = nTmp;
     }
 }
 
 
 
-void WCubePiece::rotateZ(bool bCW)
+void CubePiece::rotateZ(bool bCW)
 {
     SIDECOLOR nTmp;
 
     if (bCW) {
-        nTmp                    = m_nSideColor[SD_TOP];
-        m_nSideColor[SD_TOP]    = m_nSideColor[SD_RIGHT];
-        m_nSideColor[SD_RIGHT]  = m_nSideColor[SD_BOTTOM];
-        m_nSideColor[SD_BOTTOM] = m_nSideColor[SD_LEFT];
-        m_nSideColor[SD_LEFT]   = nTmp;
+        nTmp                    = m_SideColor[SD_TOP];
+        m_SideColor[SD_TOP]    = m_SideColor[SD_RIGHT];
+        m_SideColor[SD_RIGHT]  = m_SideColor[SD_BOTTOM];
+        m_SideColor[SD_BOTTOM] = m_SideColor[SD_LEFT];
+        m_SideColor[SD_LEFT]   = nTmp;
     }
     else {
-        nTmp                    = m_nSideColor[SD_TOP];
-        m_nSideColor[SD_TOP]    = m_nSideColor[SD_LEFT];
-        m_nSideColor[SD_LEFT]   = m_nSideColor[SD_BOTTOM];
-        m_nSideColor[SD_BOTTOM] = m_nSideColor[SD_RIGHT];
-        m_nSideColor[SD_RIGHT]  = nTmp;
+        nTmp                    = m_SideColor[SD_TOP];
+        m_SideColor[SD_TOP]    = m_SideColor[SD_LEFT];
+        m_SideColor[SD_LEFT]   = m_SideColor[SD_BOTTOM];
+        m_SideColor[SD_BOTTOM] = m_SideColor[SD_RIGHT];
+        m_SideColor[SD_RIGHT]  = nTmp;
     }
 }
