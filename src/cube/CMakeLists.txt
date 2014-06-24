@@ -6,7 +6,6 @@ include_directories(${OPENGL_INCLUDE_DIRS})
 add_executable(cube
     main.cpp
     main_handler.cpp
-    cube.cpp
     )
 
 target_link_libraries(cube logging)

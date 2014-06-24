@@ -5,7 +5,6 @@
 
 #include "gl/window/window_handler.hpp"
 #include "gl/camera/centered_camera.hpp"
-#include "cube.hpp"
 
 namespace cube {
 
@@ -13,19 +12,10 @@ const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
 class MainHandler : public gl::WindowHandler {
-    Cube cube;
-
     gl::CenteredCamera *camera;
+
     int width = WINDOW_WIDTH;
     int height = WINDOW_HEIGHT;
-
-    optional::Optional<Coords> coords1;
-    optional::Optional<Coords> coords2;
-    optional::Optional<Coords> coords3;
-
-    bool rotationEnabled = false;
-    std::pair<Axis, int> rotation;
-    int rotationDirection = 0;
 
 public:
     bool init() override;
