@@ -7,23 +7,23 @@
 
 bool poly4InsideTest(glm::vec2 *ptCorners, float ptX, float ptY)
 {
-    int nResult1, nResult2;
+    int Result1, Result2;
 
-    nResult1 = lineTest(ptCorners[0], ptCorners[1], ptX, ptY);
-    nResult2 = lineTest(ptCorners[2], ptCorners[3], ptX, ptY);
+    Result1 = lineTest(ptCorners[0], ptCorners[1], ptX, ptY);
+    Result2 = lineTest(ptCorners[2], ptCorners[3], ptX, ptY);
 
-    if (((nResult1 > 0) && (nResult2 > 0))
-        || ((nResult1 < 0) && (nResult2 < 0)))
+    if (((Result1 > 0) && (Result2 > 0))
+        || ((Result1 < 0) && (Result2 < 0)))
     {
         return false;
     }
 
 
-    nResult1 = lineTest(ptCorners[0], ptCorners[3], ptX, ptY);
-    nResult2 = lineTest(ptCorners[1], ptCorners[2], ptX, ptY);
+    Result1 = lineTest(ptCorners[0], ptCorners[3], ptX, ptY);
+    Result2 = lineTest(ptCorners[1], ptCorners[2], ptX, ptY);
 
-    if (((nResult1 > 0) && (nResult2 > 0))
-        || ((nResult1 < 0) && (nResult2 < 0)))
+    if (((Result1 > 0) && (Result2 > 0))
+        || ((Result1 < 0) && (Result2 < 0)))
     {
         return false;
     }
