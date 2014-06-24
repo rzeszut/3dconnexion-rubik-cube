@@ -6,6 +6,8 @@
 #include "gl/window/window_handler.hpp"
 #include "gl/camera/centered_camera.hpp"
 
+#include "util/optional.hpp"
+
 namespace cube {
 
 const int WINDOW_WIDTH = 1280;
@@ -14,8 +16,10 @@ const int WINDOW_HEIGHT = 720;
 class MainHandler : public gl::WindowHandler {
     gl::CenteredCamera *camera;
 
-    int width = WINDOW_WIDTH;
-    int height = WINDOW_HEIGHT;
+    glm::vec4 viewport = glm::vec4{0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
+
+    optional::Optional<glm::vec2> mouseHoldBegin;
+    optional::Optional<glm::vec2> mouseHoldEnd;
 
 public:
     bool init() override;

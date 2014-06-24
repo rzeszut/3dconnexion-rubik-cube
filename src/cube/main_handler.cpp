@@ -8,6 +8,9 @@
 
 namespace cube {
 
+using namespace glm;
+using namespace optional;
+
 bool MainHandler::init() {
     glfwSetInputMode(getWindowReference(), GLFW_STICKY_KEYS, GL_TRUE);
 
@@ -34,8 +37,8 @@ void MainHandler::resize(int width, int height) {
     LOG(DEBUG) << width << ":" << height;
     camera->resize(width, height);
 
-    this->width = width;
-    this->height = height;
+    viewport.z = width;
+    viewport.w = height;
 }
 
 void MainHandler::handleEvents() {
@@ -80,6 +83,19 @@ void MainHandler::handleEvents() {
 }
 
 void MainHandler::mouseButton(gl::MouseButton button, gl::MouseState state, float x, float y) {
+    if (button != gl::MouseButton::RIGHT) {
+        return;
+    }
+
+    switch (state) {
+    case gl::MouseState::PRESSED:
+        mouseHoldBegin = Optional<vec2>(x, y);
+        break;
+
+    case gl::MouseState::RELEASED:
+        mouseHoldEnd = Optional<vec2>(x, y);
+        break;
+    }
 }
 
 void MainHandler::mouseMove(float, float) {
@@ -87,6 +103,10 @@ void MainHandler::mouseMove(float, float) {
 
 void MainHandler::update(float delta) {
     camera->update(delta);
+
+    if (mouseHoldBegin && mouseHoldEnd) {
+        // initiate rotation
+    }
 }
 
 void MainHandler::render() {
