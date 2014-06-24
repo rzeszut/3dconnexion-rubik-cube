@@ -6,31 +6,31 @@
 #include "piece.h"
 #include "glm/glm.hpp"
 
-class WCube
+class Cube
 {
 protected:
-    WCubePiece* m_pPieces[3][3][3];
+    CubePiece* m_pPieces[3][3][3];
 
 public:
-    WCube();
-    virtual ~WCube();
+    Cube();
+    virtual ~Cube();
 
     void init(void);
     void draw(void);
     void reset(void);
 
     //Get piece based on cube coordinates
-    WCubePiece*& getPiece(int x, int y, int z)    {return m_pPieces[x+1][y+1][z+1];};
+    CubePiece*& getPiece(int x, int y, int z)    {return m_pPieces[x+1][y+1][z+1];};
 
     //Translate a mouse movement to a cube rotation.
     // glm::mat4, glm::vec3, glm::vec4, (x, y) | glm::vec2
-    bool rotate(glm::mat4 mxProjection, glm::mat4 mxModelView, glm::vec4 nViewport,
+    bool rotate(glm::mat4 Projection, glm::mat4 ModelView, glm::vec4 Viewport,
                 glm::vec2 wndSize, glm::vec2 ptMouseWnd, glm::vec2 ptLastMouseWnd);
-    void rotateXSection(int nSection, bool bCW, bool bAnimate, bool bRecord);
-    void rotateYSection(int nSection, bool bCW, bool bAnimate, bool bRecord);
-    void rotateZSection(int nSection, bool bCW, bool bAnimate, bool bRecord);
+    void rotateXSection(int Section, bool bCW, bool bAnimate, bool bRecord);
+    void rotateYSection(int Section, bool bCW, bool bAnimate, bool bRecord);
+    void rotateZSection(int Section, bool bCW, bool bAnimate, bool bRecord);
 protected:
-    void animateRotation(WCubePiece* piece[], int ctPieces, glm::vec3 v, float fAngle);
+    void animateRotation(CubePiece* piece[], int ctPieces, glm::vec3 v, float fAngle);
 };
 
 #endif //CUBE_H
