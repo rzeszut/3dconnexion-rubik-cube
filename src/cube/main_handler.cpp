@@ -26,6 +26,8 @@ bool MainHandler::init() {
     camera->setRadius(15.f);
     camera->setMoveSpeed(10.f);
 
+    cube.init();
+
     return true;
 }
 
@@ -104,14 +106,6 @@ void MainHandler::mouseMove(float, float) {
 void MainHandler::update(float delta) {
     camera->update(delta);
 
-    if (mouseHoldBegin && mouseHoldEnd) {
-        // initiate rotation
-    }
-}
-
-void MainHandler::render() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // camera matrices
     glm::mat4 projection = camera->getProjectionMatrix();
     glm::mat4 view = camera->getViewMatrix();
@@ -122,14 +116,20 @@ void MainHandler::render() {
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(glm::value_ptr(view));
 
-    // TODO: to be removed
-    glScalef(5, 5, 5);
-    glColor3f(1, 0.5, 0.5);
-    glBegin(GL_TRIANGLES);
-        glVertex3f(-1, -1, 0);
-        glVertex3f(1, -1, 0);
-        glVertex3f(0, 1, 0);
-    glEnd();
+    glm::vec2 wndSize = glm::vec2(viewport.z, viewport.w);
+    if (mouseHoldBegin && mouseHoldEnd) {
+        // initiate rotation
+        cube.rotate(projection, view, viewport, wndSize, *mouseHoldEnd, *mouseHoldBegin);
+
+        mouseHoldBegin.reset();
+        mouseHoldEnd.reset();
+    }
+}
+
+void MainHandler::render() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    cube.draw();
 }
 
 }

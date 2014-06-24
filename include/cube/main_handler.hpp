@@ -8,6 +8,8 @@
 
 #include "util/optional.hpp"
 
+#include "cube/cube.h"
+
 namespace cube {
 
 const int WINDOW_WIDTH = 1280;
@@ -20,6 +22,8 @@ class MainHandler : public gl::WindowHandler {
 
     optional::Optional<glm::vec2> mouseHoldBegin;
     optional::Optional<glm::vec2> mouseHoldEnd;
+
+    WCube cube;
 
 public:
     bool init() override;
