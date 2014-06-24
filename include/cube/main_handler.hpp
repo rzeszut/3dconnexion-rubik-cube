@@ -23,7 +23,7 @@ class MainHandler : public gl::WindowHandler {
     optional::Optional<glm::vec2> mouseHoldBegin;
     optional::Optional<glm::vec2> mouseHoldEnd;
 
-    WCube cube;
+    Cube cube;
 
 public:
     bool init() override;
