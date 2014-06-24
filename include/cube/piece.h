@@ -6,6 +6,7 @@
 
 // use glm
 #include "vec3f.h"
+#include <gl/glm.h>
 
 typedef enum {
    SD_RIGHT,
@@ -59,37 +60,25 @@ const struct {
 #define MAKESIDECOLOR(nSide)     MAKECOLOR(m_nSideColor[nSide])
 
 
-// remove this
-class BYTEVEC 
-{
-public:
-   INT8 x,y,z;
-
-public:
-   BYTEVEC() {};
-   BYTEVEC(INT8 xx, INT8 yy, INT8 zz)   {x=xx; y=yy; z=zz;};
-};
-
-
 
 
 class WCubePiece
 {
 protected:
    SIDECOLOR m_nSideColor[6];
-   BYTEVEC m_posHome;        
+   glm::ivec3 m_posHome;        
                              
 
    //Rotation animation state variables
    float m_fRotationAngle;     
-   Vec3f m_vRotation;     
+   glm::ivec3 m_vRotation;     
 
 
 public:
    WCubePiece(BYTEVEC pos);
    virtual ~WCubePiece();
 
-   void draw(INT8 x, INT8 y, INT8 z);
+   void draw(int x, int y, int z);
 
    void rotateX(BOOL bCW);
    void rotateY(BOOL bCW);

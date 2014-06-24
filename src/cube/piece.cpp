@@ -4,7 +4,7 @@
 #include "vec3f.h"
 
 
-WCubePiece::WCubePiece(BYTEVEC posHome)
+WCubePiece::WCubePiece(glm::ivec3 posHome)
 : m_posHome(posHome), m_fRotationAngle(0), m_vRotation(0,0,0)
 {
    m_nSideColor[SD_RIGHT]  = posHome.x== 1 ? WHITE  : BLACK;
@@ -22,7 +22,7 @@ WCubePiece::~WCubePiece()
 
 
 
-void WCubePiece::draw(INT8 x, INT8 y, INT8 z)
+void WCubePiece::draw(int x, int y, int z)
 {
    glPushMatrix();
       if (m_fRotationAngle)
@@ -104,7 +104,7 @@ void WCubePiece::draw(INT8 x, INT8 y, INT8 z)
 
 
 
-void WCubePiece::rotateX(BOOL bCW)
+void WCubePiece::rotateX(bool bCW)
 {
    SIDECOLOR nTmp;
 
@@ -126,7 +126,7 @@ void WCubePiece::rotateX(BOOL bCW)
 
 
 
-void WCubePiece::rotateY(BOOL bCW)
+void WCubePiece::rotateY(bool bCW)
 {
    SIDECOLOR nTmp;
 
@@ -148,7 +148,7 @@ void WCubePiece::rotateY(BOOL bCW)
 
 
 
-void WCubePiece::rotateZ(BOOL bCW)
+void WCubePiece::rotateZ(bool bCW)
 {
    SIDECOLOR nTmp;
 
