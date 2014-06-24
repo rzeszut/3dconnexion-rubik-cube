@@ -5,8 +5,6 @@
 
 #define PI  3.14159265359f
 
-typedef signed char INT8;
-
 #define ELEMENTS_OF(array)       (sizeof(array)/sizeof(array[0]))
 #define minmax(min_, x, max_)    (min(max(min_,x), max_))
 
