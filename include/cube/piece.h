@@ -1,9 +1,7 @@
 #ifndef PIECE_H
 #define PIECE_H
 
-
 #include "util.h"
-
 #include "glm/glm.hpp"
 
 typedef enum {
@@ -14,9 +12,6 @@ typedef enum {
     SD_FRONT,
     SD_BACK,
 } SIDE;
-
-
-
 
 //Define colors for side
 typedef enum {
@@ -54,16 +49,13 @@ const struct {
 #endif //USE_SCOTT_COLORS
 };
 
-#define MAKECOLOR(nColor)        m_rgb[nColor].r, m_rgb[nColor].g, m_rgb[nColor].b
-#define MAKESIDECOLOR(nSide)     MAKECOLOR(m_nSideColor[nSide])
+#define MAKECOLOR(Color)        m_rgb[Color].r, m_rgb[Color].g, m_rgb[Color].b
+#define MAKESIDECOLOR(Side)     MAKECOLOR(m_SideColor[Side])
 
-
-
-
-class WCubePiece
+class CubePiece
 {
 protected:
-    SIDECOLOR m_nSideColor[6];
+    SIDECOLOR m_SideColor[6];
     glm::ivec3 m_posHome;
 
 
@@ -73,8 +65,8 @@ protected:
 
 
 public:
-    WCubePiece(const glm::ivec3 &pos);
-    virtual ~WCubePiece();
+    CubePiece(const glm::ivec3 &pos);
+    virtual ~CubePiece();
 
     void draw(int x, int y, int z);
 
