@@ -7,16 +7,14 @@
 #include "glm/gtx/vector_angle.hpp"
 #include "cube/cube.h"
 
-
-
 #define ALMOST_ZERO   1e-6f
 
-WCube::WCube()
+Cube::Cube()
 {
-    memset(m_pPieces, 0, sizeof(WCubePiece*)*3*3*3);
+    memset(m_pPieces, 0, sizeof(CubePiece*)*3*3*3);
 }
 
-WCube::~WCube()
+Cube::~Cube()
 {
     for (int x=0; x<3; x++) {
         for (int y=0; y<3; y++) {
@@ -28,12 +26,12 @@ WCube::~WCube()
     }
 }
 
-void WCube::init(void)
+void Cube::init(void)
 {
     reset();
 }
 
-void WCube::draw(void)
+void Cube::draw(void)
 {
     int x,y,z;
 
@@ -46,7 +44,7 @@ void WCube::draw(void)
     }
 }
 
-void WCube::reset(void)
+void Cube::reset(void)
 {
     for (int x=0; x<3; x++) {
         for (int y=0; y<3; y++) {
@@ -54,14 +52,14 @@ void WCube::reset(void)
                 if (m_pPieces[x][y][z])
                     delete m_pPieces[x][y][z];
 
-                m_pPieces[x][y][z] = new WCubePiece(glm::ivec3(x-1, y-1, z-1));
+                m_pPieces[x][y][z] = new CubePiece(glm::ivec3(x-1, y-1, z-1));
             }
         }
     }
 
 }
 
-bool WCube::rotate(glm::mat4 mxProjection, glm::mat4 mxModelView, glm::vec4 nViewport,
+bool Cube::rotate(glm::mat4 Projection, glm::mat4 ModelView, glm::vec4 Viewport,
                    glm::vec2 wndSize, glm::vec2 ptMouseWnd, glm::vec2 ptLastMouseWnd)
 {
     static bool animate = false;
@@ -69,28 +67,28 @@ bool WCube::rotate(glm::mat4 mxProjection, glm::mat4 mxModelView, glm::vec4 nVie
     glm::vec2 ptMouse(ptMouseWnd.x, wndSize.y-ptMouseWnd.y);
     glm::vec2 ptLastMouse(ptLastMouseWnd.x, wndSize.y-ptLastMouseWnd.y);
 
-    glm::vec3 vCubeCorner[8];
+    glm::vec3 CubeCorner[8];
 
     // use glm::project instead of gluProject
-    vCubeCorner[0] = glm::project(glm::vec3(1.5, 1.5, 1.5), mxModelView, mxProjection, nViewport);
-    vCubeCorner[1] = glm::project(glm::vec3(1.5,-1.5, 1.5), mxModelView, mxProjection, nViewport);
-    vCubeCorner[2] = glm::project(glm::vec3(-1.5,-1.5, 1.5), mxModelView, mxProjection, nViewport);
-    vCubeCorner[3] = glm::project(glm::vec3(-1.5, 1.5, 1.5), mxModelView, mxProjection, nViewport);
+    CubeCorner[0] = glm::project(glm::vec3(1.5, 1.5, 1.5), ModelView, Projection, Viewport);
+    CubeCorner[1] = glm::project(glm::vec3(1.5,-1.5, 1.5), ModelView, Projection, Viewport);
+    CubeCorner[2] = glm::project(glm::vec3(-1.5,-1.5, 1.5), ModelView, Projection, Viewport);
+    CubeCorner[3] = glm::project(glm::vec3(-1.5, 1.5, 1.5), ModelView, Projection, Viewport);
 
-    vCubeCorner[4] = glm::project(glm::vec3(1.5, 1.5,-1.5), mxModelView, mxProjection, nViewport);
-    vCubeCorner[5] = glm::project(glm::vec3(1.5,-1.5,-1.5), mxModelView, mxProjection, nViewport);
-    vCubeCorner[6] = glm::project(glm::vec3(-1.5,-1.5,-1.5), mxModelView, mxProjection, nViewport);
-    vCubeCorner[7] = glm::project(glm::vec3(-1.5, 1.5,-1.5), mxModelView, mxProjection, nViewport);
+    CubeCorner[4] = glm::project(glm::vec3(1.5, 1.5,-1.5), ModelView, Projection, Viewport);
+    CubeCorner[5] = glm::project(glm::vec3(1.5,-1.5,-1.5), ModelView, Projection, Viewport);
+    CubeCorner[6] = glm::project(glm::vec3(-1.5,-1.5,-1.5), ModelView, Projection, Viewport);
+    CubeCorner[7] = glm::project(glm::vec3(-1.5, 1.5,-1.5), ModelView, Projection, Viewport);
 
 
     //Find the min/max X and Y to do a rough bounding box test.
     float xMin=FLT_MAX, yMin=FLT_MAX;
     float xMax=FLT_MIN, yMax=FLT_MIN;
     for (int i=0; i<8; i++) {
-        xMin = fmin(xMin, (float)vCubeCorner[i].x);
-        yMin = fmin(yMin, (float)vCubeCorner[i].y);
-        xMax = fmax(xMax, (float)vCubeCorner[i].x);
-        yMax = fmax(yMax, (float)vCubeCorner[i].y);
+        xMin = fmin(xMin, (float)CubeCorner[i].x);
+        yMin = fmin(yMin, (float)CubeCorner[i].y);
+        xMax = fmax(xMax, (float)CubeCorner[i].x);
+        yMax = fmax(yMax, (float)CubeCorner[i].y);
     }
 
     //Check if point was outside rough test and return if it was.
@@ -100,41 +98,41 @@ bool WCube::rotate(glm::mat4 mxProjection, glm::mat4 mxModelView, glm::vec4 nVie
         return false;        //Failed rough bounding box test
     }
 
-    glm::vec3 vCorner[6][4] = {
-        {vCubeCorner[5], vCubeCorner[1], vCubeCorner[0], vCubeCorner[4]},    //Right
-        {vCubeCorner[6], vCubeCorner[2], vCubeCorner[3], vCubeCorner[7]},    //Left
-        {vCubeCorner[7], vCubeCorner[4], vCubeCorner[0], vCubeCorner[3]},    //Top
-        {vCubeCorner[6], vCubeCorner[5], vCubeCorner[1], vCubeCorner[2]},    //Bottom
-        {vCubeCorner[2], vCubeCorner[1], vCubeCorner[0], vCubeCorner[3]},    //Front
-        {vCubeCorner[6], vCubeCorner[5], vCubeCorner[4], vCubeCorner[7]},    //Back
+    glm::vec3 Corner[6][4] = {
+        {CubeCorner[5], CubeCorner[1], CubeCorner[0], CubeCorner[4]},    //Right
+        {CubeCorner[6], CubeCorner[2], CubeCorner[3], CubeCorner[7]},    //Left
+        {CubeCorner[7], CubeCorner[4], CubeCorner[0], CubeCorner[3]},    //Top
+        {CubeCorner[6], CubeCorner[5], CubeCorner[1], CubeCorner[2]},    //Bottom
+        {CubeCorner[2], CubeCorner[1], CubeCorner[0], CubeCorner[3]},    //Front
+        {CubeCorner[6], CubeCorner[5], CubeCorner[4], CubeCorner[7]},    //Back
     };
 
     double fMinZ = DBL_MAX;
     double fTmp;
-    SIDE nSide = (SIDE)-1;
+    SIDE Side = (SIDE)-1;
 
 
     for (int i=0; i<6; i++) {
-        if (poly4InsideTest(vCorner[i], ptLastMouse.x, ptLastMouse.y)) {
-            fTmp = fmin(fmin(fmin(vCorner[i][0].z, vCorner[i][1].z), vCorner[i][2].z), vCorner[i][3].z);
+        if (poly4InsideTest(Corner[i], ptLastMouse.x, ptLastMouse.y)) {
+            fTmp = fmin(fmin(fmin(Corner[i][0].z, Corner[i][1].z), Corner[i][2].z), Corner[i][3].z);
             if (fTmp < fMinZ) {
-                nSide = (SIDE)i;
+                Side = (SIDE)i;
                 fMinZ = fTmp;
             }
         }
     }
 
-    if ((int) nSide == -1)
+    if ((int) Side == -1)
         return false;        //Missed all the sides.
 
     glm::vec2 vX(
-        (float)(vCorner[nSide][1].x - vCorner[nSide][0].x),
-        (float)(vCorner[nSide][1].y - vCorner[nSide][0].y)
+        (float)(Corner[Side][1].x - Corner[Side][0].x),
+        (float)(Corner[Side][1].y - Corner[Side][0].y)
         );
 
     glm::vec2 vY(
-        (float)(vCorner[nSide][2].x - vCorner[nSide][1].x),
-        (float)(vCorner[nSide][2].y - vCorner[nSide][1].y)
+        (float)(Corner[Side][2].x - Corner[Side][1].x),
+        (float)(Corner[Side][2].y - Corner[Side][1].y)
         );
 
     glm::vec2 vMouse(
@@ -152,52 +150,52 @@ bool WCube::rotate(glm::mat4 mxProjection, glm::mat4 mxModelView, glm::vec4 nVie
     float yDiff = glm::angle(vY, vMouse);
     float minDiff = (float)fmin(fmin(fmin(fabs(xDiff), fabs(yDiff)), fabs(xDiff-180)), fabs(yDiff-180));
 
-    int nSection;
+    int Section;
 
     minDiff += ALMOST_ZERO;
 
     if (fabs(xDiff) <= minDiff) {
-        nSection = getYsection(vCorner[nSide], ptLastMouse.x ,ptLastMouse.y);
-        switch (nSide) {
-        case SD_FRONT:    rotateYSection(nSection, true, animate, true);     break;
-        case SD_BACK:     rotateYSection(nSection, false, animate, true);    break;
-        case SD_LEFT:     rotateYSection(nSection, true, animate, true);     break;
-        case SD_RIGHT:    rotateYSection(nSection, false, animate, true);    break;
-        case SD_TOP:      rotateZSection(nSection, false, animate, true);     break;
-        case SD_BOTTOM:   rotateZSection(nSection, true, animate, true);    break;
+        Section = getYsection(Corner[Side], ptLastMouse.x ,ptLastMouse.y);
+        switch (Side) {
+        case SD_FRONT:    rotateYSection(Section, true, animate, true);     break;
+        case SD_BACK:     rotateYSection(Section, false, animate, true);    break;
+        case SD_LEFT:     rotateYSection(Section, true, animate, true);     break;
+        case SD_RIGHT:    rotateYSection(Section, false, animate, true);    break;
+        case SD_TOP:      rotateZSection(Section, false, animate, true);     break;
+        case SD_BOTTOM:   rotateZSection(Section, true, animate, true);    break;
         }
     }
     else if (fabs(xDiff-180) <= minDiff) {
-        nSection = getYsection(vCorner[nSide], ptLastMouse.x, ptLastMouse.y);
-        switch (nSide) {
-        case SD_FRONT:    rotateYSection(nSection, false, animate, true);    break;
-        case SD_BACK:     rotateYSection(nSection, true, animate, true);     break;
-        case SD_LEFT:     rotateYSection(nSection, false, animate, true);    break;
-        case SD_RIGHT:    rotateYSection(nSection, true, animate, true);     break;
-        case SD_TOP:      rotateZSection(nSection, true, animate, true);    break;
-        case SD_BOTTOM:   rotateZSection(nSection, false, animate, true);     break;
+        Section = getYsection(Corner[Side], ptLastMouse.x, ptLastMouse.y);
+        switch (Side) {
+        case SD_FRONT:    rotateYSection(Section, false, animate, true);    break;
+        case SD_BACK:     rotateYSection(Section, true, animate, true);     break;
+        case SD_LEFT:     rotateYSection(Section, false, animate, true);    break;
+        case SD_RIGHT:    rotateYSection(Section, true, animate, true);     break;
+        case SD_TOP:      rotateZSection(Section, true, animate, true);    break;
+        case SD_BOTTOM:   rotateZSection(Section, false, animate, true);     break;
         }
     }
     else if (fabs(yDiff) <= minDiff) {
-        nSection = getXsection(vCorner[nSide], ptLastMouse.x, ptLastMouse.y);
-        switch (nSide) {
-        case SD_FRONT:    rotateXSection(nSection, false, animate, true);    break;
-        case SD_BACK:     rotateXSection(nSection, true,  animate, true);    break;
-        case SD_LEFT:     rotateZSection(nSection, false, animate, true);     break;
-        case SD_RIGHT:    rotateZSection(nSection, true, animate, true);    break;
-        case SD_TOP:      rotateXSection(nSection, true,  animate, true);    break;
-        case SD_BOTTOM:   rotateXSection(nSection, false, animate, true);    break;
+        Section = getXsection(Corner[Side], ptLastMouse.x, ptLastMouse.y);
+        switch (Side) {
+        case SD_FRONT:    rotateXSection(Section, false, animate, true);    break;
+        case SD_BACK:     rotateXSection(Section, true,  animate, true);    break;
+        case SD_LEFT:     rotateZSection(Section, false, animate, true);     break;
+        case SD_RIGHT:    rotateZSection(Section, true, animate, true);    break;
+        case SD_TOP:      rotateXSection(Section, true,  animate, true);    break;
+        case SD_BOTTOM:   rotateXSection(Section, false, animate, true);    break;
         }
     }
     else if (fabs(yDiff-180) <= minDiff) {
-        nSection = getXsection(vCorner[nSide], ptLastMouse.x, ptLastMouse.y);
-        switch (nSide) {
-        case SD_FRONT:    rotateXSection(nSection, true,  animate, true);    break;
-        case SD_BACK:     rotateXSection(nSection, false, animate, true);    break;
-        case SD_LEFT:     rotateZSection(nSection, true, animate, true);    break;
-        case SD_RIGHT:    rotateZSection(nSection, false, animate, true);     break;
-        case SD_TOP:      rotateXSection(nSection, false, animate, true);    break;
-        case SD_BOTTOM:   rotateXSection(nSection, true,  animate, true);    break;
+        Section = getXsection(Corner[Side], ptLastMouse.x, ptLastMouse.y);
+        switch (Side) {
+        case SD_FRONT:    rotateXSection(Section, true,  animate, true);    break;
+        case SD_BACK:     rotateXSection(Section, false, animate, true);    break;
+        case SD_LEFT:     rotateZSection(Section, true, animate, true);    break;
+        case SD_RIGHT:    rotateZSection(Section, false, animate, true);     break;
+        case SD_TOP:      rotateXSection(Section, false, animate, true);    break;
+        case SD_BOTTOM:   rotateXSection(Section, true,  animate, true);    break;
         }
     }
     else {
@@ -207,7 +205,7 @@ bool WCube::rotate(glm::mat4 mxProjection, glm::mat4 mxModelView, glm::vec4 nVie
     return true;
 }
 
-void WCube::animateRotation(WCubePiece* piece[], int ctPieces, glm::vec3 v, float fAngle)
+void Cube::animateRotation(CubePiece* piece[], int ctPieces, glm::vec3 v, float fAngle)
 {
     int x;
 
@@ -225,23 +223,23 @@ void WCube::animateRotation(WCubePiece* piece[], int ctPieces, glm::vec3 v, floa
         piece[x]->clrRotation();
 }
 
-void WCube::rotateXSection(int nSection, bool bCW, bool bAnimate, bool bRecord)
+void Cube::rotateXSection(int Section, bool bCW, bool bAnimate, bool bRecord)
 {
-    WCubePiece* pTmp;
+    CubePiece* pTmp;
     int i;
 
     //ASSERT(-1 <= nSection && nSection <= 1);
 
-    WCubePiece* pieces[] = {
-        getPiece(nSection, 1, 1),
-        getPiece(nSection,-1, 1),
-        getPiece(nSection,-1,-1),
-        getPiece(nSection, 1,-1),
-        getPiece(nSection, 1, 0),
-        getPiece(nSection, 0, 1),
-        getPiece(nSection,-1, 0),
-        getPiece(nSection, 0,-1),
-        getPiece(nSection, 0, 0),
+    CubePiece* pieces[] = {
+        getPiece(Section, 1, 1),
+        getPiece(Section,-1, 1),
+        getPiece(Section,-1,-1),
+        getPiece(Section, 1,-1),
+        getPiece(Section, 1, 0),
+        getPiece(Section, 0, 1),
+        getPiece(Section,-1, 0),
+        getPiece(Section, 0,-1),
+        getPiece(Section, 0, 0),
     };
 
     float fAngle = bCW ? 90.0f : -90.0f;
@@ -253,52 +251,52 @@ void WCube::rotateXSection(int nSection, bool bCW, bool bAnimate, bool bRecord)
 
 
     if (bCW) {
-        pTmp = getPiece(nSection, 1, 1);
-        getPiece(nSection, 1, 1) = getPiece(nSection, 1,-1);
-        getPiece(nSection, 1,-1) = getPiece(nSection,-1,-1);
-        getPiece(nSection,-1,-1) = getPiece(nSection,-1, 1);
-        getPiece(nSection,-1, 1) = pTmp;
+        pTmp = getPiece(Section, 1, 1);
+        getPiece(Section, 1, 1) = getPiece(Section, 1,-1);
+        getPiece(Section, 1,-1) = getPiece(Section,-1,-1);
+        getPiece(Section,-1,-1) = getPiece(Section,-1, 1);
+        getPiece(Section,-1, 1) = pTmp;
 
-        pTmp = getPiece(nSection, 1, 0);
-        getPiece(nSection, 1, 0) = getPiece(nSection, 0,-1);
-        getPiece(nSection, 0,-1) = getPiece(nSection,-1, 0);
-        getPiece(nSection,-1, 0) = getPiece(nSection, 0, 1);
-        getPiece(nSection, 0, 1) = pTmp;
+        pTmp = getPiece(Section, 1, 0);
+        getPiece(Section, 1, 0) = getPiece(Section, 0,-1);
+        getPiece(Section, 0,-1) = getPiece(Section,-1, 0);
+        getPiece(Section,-1, 0) = getPiece(Section, 0, 1);
+        getPiece(Section, 0, 1) = pTmp;
     }
     else {
-        pTmp = getPiece(nSection, 1, 1);
-        getPiece(nSection, 1, 1) = getPiece(nSection,-1, 1);
-        getPiece(nSection,-1, 1) = getPiece(nSection,-1,-1);
-        getPiece(nSection,-1,-1) = getPiece(nSection, 1,-1);
-        getPiece(nSection, 1,-1) = pTmp;
+        pTmp = getPiece(Section, 1, 1);
+        getPiece(Section, 1, 1) = getPiece(Section,-1, 1);
+        getPiece(Section,-1, 1) = getPiece(Section,-1,-1);
+        getPiece(Section,-1,-1) = getPiece(Section, 1,-1);
+        getPiece(Section, 1,-1) = pTmp;
 
-        pTmp = getPiece(nSection, 1, 0);
-        getPiece(nSection, 1, 0) = getPiece(nSection, 0, 1);
-        getPiece(nSection, 0, 1) = getPiece(nSection,-1, 0);
-        getPiece(nSection,-1, 0) = getPiece(nSection, 0,-1);
-        getPiece(nSection, 0,-1) = pTmp;
+        pTmp = getPiece(Section, 1, 0);
+        getPiece(Section, 1, 0) = getPiece(Section, 0, 1);
+        getPiece(Section, 0, 1) = getPiece(Section,-1, 0);
+        getPiece(Section,-1, 0) = getPiece(Section, 0,-1);
+        getPiece(Section, 0,-1) = pTmp;
 
     }
 
 }
 
-void WCube::rotateYSection(int nSection, bool bCW, bool bAnimate, bool bRecord)
+void Cube::rotateYSection(int Section, bool bCW, bool bAnimate, bool bRecord)
 {
-    WCubePiece* pTmp;
+    CubePiece* pTmp;
     int i;
 
     //ASSERT(-1 <= nSection && nSection <= 1);
 
-    WCubePiece* pieces[] = {
-        getPiece( 1, nSection, 1),
-        getPiece(-1, nSection, 1),
-        getPiece(-1, nSection,-1),
-        getPiece( 1, nSection,-1),
-        getPiece( 1, nSection, 0),
-        getPiece( 0, nSection, 1),
-        getPiece(-1, nSection, 0),
-        getPiece( 0, nSection,-1),
-        getPiece( 0, nSection, 0)
+    CubePiece* pieces[] = {
+        getPiece( 1, Section, 1),
+        getPiece(-1, Section, 1),
+        getPiece(-1, Section,-1),
+        getPiece( 1, Section,-1),
+        getPiece( 1, Section, 0),
+        getPiece( 0, Section, 1),
+        getPiece(-1, Section, 0),
+        getPiece( 0, Section,-1),
+        getPiece( 0, Section, 0)
     };
 
     float fAngle = bCW ? 90.0f : -90.0f;
@@ -311,51 +309,51 @@ void WCube::rotateYSection(int nSection, bool bCW, bool bAnimate, bool bRecord)
 
 
     if (bCW) {
-        pTmp = getPiece(1, nSection, 1);
-        getPiece( 1, nSection, 1) = getPiece(-1, nSection, 1);
-        getPiece(-1, nSection, 1) = getPiece(-1, nSection,-1);
-        getPiece(-1, nSection,-1) = getPiece( 1, nSection,-1);
-        getPiece( 1, nSection,-1) = pTmp;
+        pTmp = getPiece(1, Section, 1);
+        getPiece( 1, Section, 1) = getPiece(-1, Section, 1);
+        getPiece(-1, Section, 1) = getPiece(-1, Section,-1);
+        getPiece(-1, Section,-1) = getPiece( 1, Section,-1);
+        getPiece( 1, Section,-1) = pTmp;
 
-        pTmp = getPiece(1, nSection, 0);
-        getPiece( 1, nSection, 0) = getPiece( 0, nSection, 1);
-        getPiece( 0, nSection, 1) = getPiece(-1, nSection, 0);
-        getPiece(-1, nSection, 0) = getPiece( 0, nSection,-1);
-        getPiece( 0, nSection,-1) = pTmp;
+        pTmp = getPiece(1, Section, 0);
+        getPiece( 1, Section, 0) = getPiece( 0, Section, 1);
+        getPiece( 0, Section, 1) = getPiece(-1, Section, 0);
+        getPiece(-1, Section, 0) = getPiece( 0, Section,-1);
+        getPiece( 0, Section,-1) = pTmp;
     }
     else {
-        pTmp = getPiece(1, nSection, 1);
-        getPiece( 1, nSection, 1) = getPiece( 1, nSection,-1);
-        getPiece( 1, nSection,-1) = getPiece(-1, nSection,-1);
-        getPiece(-1, nSection,-1) = getPiece(-1, nSection, 1);
-        getPiece(-1, nSection, 1) = pTmp;
+        pTmp = getPiece(1, Section, 1);
+        getPiece( 1, Section, 1) = getPiece( 1, Section,-1);
+        getPiece( 1, Section,-1) = getPiece(-1, Section,-1);
+        getPiece(-1, Section,-1) = getPiece(-1, Section, 1);
+        getPiece(-1, Section, 1) = pTmp;
 
-        pTmp = getPiece(1, nSection, 0);
-        getPiece( 1, nSection, 0) = getPiece( 0, nSection,-1);
-        getPiece( 0, nSection,-1) = getPiece(-1, nSection, 0);
-        getPiece(-1, nSection, 0) = getPiece( 0, nSection, 1);
-        getPiece( 0, nSection, 1) = pTmp;
+        pTmp = getPiece(1, Section, 0);
+        getPiece( 1, Section, 0) = getPiece( 0, Section,-1);
+        getPiece( 0, Section,-1) = getPiece(-1, Section, 0);
+        getPiece(-1, Section, 0) = getPiece( 0, Section, 1);
+        getPiece( 0, Section, 1) = pTmp;
     }
 
 }
 
-void WCube::rotateZSection(int nSection, bool bCW, bool bAnimate, bool bRecord)
+void Cube::rotateZSection(int Section, bool bCW, bool bAnimate, bool bRecord)
 {
-    WCubePiece* pTmp;
+    CubePiece* pTmp;
     int i;
 
     //ASSERT(-1 <= nSection && nSection <= 1);
 
-    WCubePiece* pieces[] = {
-        getPiece( 1, 1, nSection),
-        getPiece(-1, 1, nSection),
-        getPiece(-1,-1, nSection),
-        getPiece( 1,-1, nSection),
-        getPiece( 1, 0, nSection),
-        getPiece( 0, 1, nSection),
-        getPiece(-1, 0, nSection),
-        getPiece( 0,-1, nSection),
-        getPiece( 0, 0, nSection)
+    CubePiece* pieces[] = {
+        getPiece( 1, 1, Section),
+        getPiece(-1, 1, Section),
+        getPiece(-1,-1, Section),
+        getPiece( 1,-1, Section),
+        getPiece( 1, 0, Section),
+        getPiece( 0, 1, Section),
+        getPiece(-1, 0, Section),
+        getPiece( 0,-1, Section),
+        getPiece( 0, 0, Section)
     };
 
     float fAngle = bCW ? 90.0f : -90.0f;
@@ -368,30 +366,30 @@ void WCube::rotateZSection(int nSection, bool bCW, bool bAnimate, bool bRecord)
 
 
     if (bCW) {
-        pTmp = getPiece( 1, 1, nSection);
-        getPiece( 1, 1, nSection) = getPiece( 1,-1, nSection);
-        getPiece( 1,-1, nSection) = getPiece(-1,-1, nSection);
-        getPiece(-1,-1, nSection) = getPiece(-1, 1, nSection);
-        getPiece(-1, 1, nSection) = pTmp;
+        pTmp = getPiece( 1, 1, Section);
+        getPiece( 1, 1, Section) = getPiece( 1,-1, Section);
+        getPiece( 1,-1, Section) = getPiece(-1,-1, Section);
+        getPiece(-1,-1, Section) = getPiece(-1, 1, Section);
+        getPiece(-1, 1, Section) = pTmp;
 
-        pTmp = getPiece( 1, 0, nSection);
-        getPiece( 1, 0, nSection) = getPiece( 0,-1, nSection);
-        getPiece( 0,-1, nSection) = getPiece(-1, 0, nSection);
-        getPiece(-1, 0, nSection) = getPiece( 0, 1, nSection);
-        getPiece( 0, 1, nSection) = pTmp;
+        pTmp = getPiece( 1, 0, Section);
+        getPiece( 1, 0, Section) = getPiece( 0,-1, Section);
+        getPiece( 0,-1, Section) = getPiece(-1, 0, Section);
+        getPiece(-1, 0, Section) = getPiece( 0, 1, Section);
+        getPiece( 0, 1, Section) = pTmp;
     }
     else {
-        pTmp = getPiece( 1, 1, nSection);
-        getPiece( 1, 1, nSection) = getPiece(-1, 1, nSection);
-        getPiece(-1, 1, nSection) = getPiece(-1,-1, nSection);
-        getPiece(-1,-1, nSection) = getPiece( 1,-1, nSection);
-        getPiece( 1,-1, nSection) = pTmp;
+        pTmp = getPiece( 1, 1, Section);
+        getPiece( 1, 1, Section) = getPiece(-1, 1, Section);
+        getPiece(-1, 1, Section) = getPiece(-1,-1, Section);
+        getPiece(-1,-1, Section) = getPiece( 1,-1, Section);
+        getPiece( 1,-1, Section) = pTmp;
 
-        pTmp = getPiece( 1, 0, nSection);
-        getPiece( 1, 0, nSection) = getPiece( 0, 1, nSection);
-        getPiece( 0, 1, nSection) = getPiece(-1, 0, nSection);
-        getPiece(-1, 0, nSection) = getPiece( 0,-1, nSection);
-        getPiece( 0,-1, nSection) = pTmp;
+        pTmp = getPiece( 1, 0, Section);
+        getPiece( 1, 0, Section) = getPiece( 0, 1, Section);
+        getPiece( 0, 1, Section) = getPiece(-1, 0, Section);
+        getPiece(-1, 0, Section) = getPiece( 0,-1, Section);
+        getPiece( 0,-1, Section) = pTmp;
     }
 
 }
