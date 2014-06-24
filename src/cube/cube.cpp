@@ -115,7 +115,7 @@ bool WCube::rotate(glm::mat4 mxProjection, glm::mat4 mxModelView, glm::vec4 nVie
 
 
     for (int i=0; i<6; i++) {
-        if (poly4InsideTest(vCorner[i], ptLastMouse)) {
+        if (poly4InsideTest(vCorner[i], ptLastMouse.x, ptLastMouse.y)) {
             fTmp = fmin(fmin(fmin(vCorner[i][0].z, vCorner[i][1].z), vCorner[i][2].z), vCorner[i][3].z);
             if (fTmp < fMinZ) {
                 nSide = (SIDE)i;

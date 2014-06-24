@@ -5,7 +5,7 @@
 
 #define ALMOST_ZERO 1e-6     // error tolerance
 
-bool poly4InsideTest(const glm::vec2 ptCorners[], float ptX, float ptY)
+bool poly4InsideTest(glm::vec2 *ptCorners, float ptX, float ptY)
 {
     int nResult1, nResult2;
 
@@ -32,9 +32,9 @@ bool poly4InsideTest(const glm::vec2 ptCorners[], float ptX, float ptY)
     return true;
 }
 
-bool poly4InsideTest(const glm::vec3 pt3Corners[], float ptX, float ptY)
+bool poly4InsideTest(glm::vec3 *pt3Corners, float ptX, float ptY)
 {
-    glm::vec3 pt2Corners[4];
+    glm::vec2 pt2Corners[4];
 
     for (int i=0; i<4; i++) {
         pt2Corners[i].x = pt3Corners[i].x;
@@ -65,7 +65,7 @@ int lineTest(const glm::vec2& ptLineStart, const glm::vec2& ptLineEnd, float ptX
 }
 
 
-int getYsection(glm::vec2 ptCorners[], float ptX, float ptY)
+int getYsection(glm::vec2 *ptCorners, float ptX, float ptY)
 {
     int rc0, rc1, rc2;
     glm::vec2 ptLineStart, ptLineEnd;
@@ -115,7 +115,7 @@ int getYsection(glm::vec2 ptCorners[], float ptX, float ptY)
     return -1;
 }
 
-int getYsection(glm::vec3 pt3Corners[], float ptX, float ptY)
+int getYsection(glm::vec3 *pt3Corners, float ptX, float ptY)
 {
     glm::vec2 pt2Corners[4];
 
@@ -129,7 +129,7 @@ int getYsection(glm::vec3 pt3Corners[], float ptX, float ptY)
 }
 
 
-int getXsection(glm::vec2 ptCorners[], float ptX, float ptY)
+int getXsection(glm::vec2 *ptCorners, float ptX, float ptY)
 {
     int rc0, rc1, rc2;
     glm::vec2 ptLineStart, ptLineEnd;
@@ -178,7 +178,7 @@ int getXsection(glm::vec2 ptCorners[], float ptX, float ptY)
 }
 
 
-int getXsection(glm::vec3 pt3Corners[], float ptX, float ptY)
+int getXsection(glm::vec3 *pt3Corners, float ptX, float ptY)
 {
     glm::vec2 pt2Corners[4];
 
