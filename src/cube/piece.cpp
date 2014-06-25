@@ -2,6 +2,7 @@
 
 #include "cube/piece.h"
 
+namespace cube {
 
 CubePiece::CubePiece(const glm::ivec3 &posHome) :
     m_posHome(posHome), m_fRotationAngle(0), m_vRotation(0,0,0)
@@ -14,18 +15,12 @@ CubePiece::CubePiece(const glm::ivec3 &posHome) :
     m_SideColor[SD_BACK]   = posHome.z==-1 ? YELLOW : BLACK;
 }
 
-
-CubePiece::~CubePiece()
-{
-}
-
-
-
-void CubePiece::draw(int x, int y, int z)
-{
+void CubePiece::draw(int x, int y, int z) {
     glPushMatrix();
-    if (m_fRotationAngle)
+
+    if (m_fRotationAngle) {
         glRotatef(m_fRotationAngle, m_vRotation.x, m_vRotation.y, m_vRotation.z);
+    }
 
     glTranslatef((float)x, (float)y, (float)z);
 
@@ -99,12 +94,7 @@ void CubePiece::draw(int x, int y, int z)
     glPopMatrix();
 }
 
-
-
-
-
-void CubePiece::rotateX(bool bCW)
-{
+void CubePiece::rotateX(bool bCW) {
     SIDECOLOR nTmp;
 
     if (bCW) {
@@ -113,8 +103,7 @@ void CubePiece::rotateX(bool bCW)
         m_SideColor[SD_BACK]   = m_SideColor[SD_BOTTOM];
         m_SideColor[SD_BOTTOM] = m_SideColor[SD_FRONT];
         m_SideColor[SD_FRONT]  = nTmp;
-    }
-    else {
+    } else {
         nTmp                    = m_SideColor[SD_TOP];
         m_SideColor[SD_TOP]    = m_SideColor[SD_FRONT];
         m_SideColor[SD_FRONT]  = m_SideColor[SD_BOTTOM];
@@ -123,10 +112,7 @@ void CubePiece::rotateX(bool bCW)
     }
 }
 
-
-
-void CubePiece::rotateY(bool bCW)
-{
+void CubePiece::rotateY(bool bCW) {
     SIDECOLOR nTmp;
 
     if (bCW) {
@@ -135,8 +121,7 @@ void CubePiece::rotateY(bool bCW)
         m_SideColor[SD_LEFT]   = m_SideColor[SD_BACK];
         m_SideColor[SD_BACK]   = m_SideColor[SD_RIGHT];
         m_SideColor[SD_RIGHT]  = nTmp;
-    }
-    else {
+    } else {
         nTmp                    = m_SideColor[SD_FRONT];
         m_SideColor[SD_FRONT]  = m_SideColor[SD_RIGHT];
         m_SideColor[SD_RIGHT]  = m_SideColor[SD_BACK];
@@ -145,10 +130,7 @@ void CubePiece::rotateY(bool bCW)
     }
 }
 
-
-
-void CubePiece::rotateZ(bool bCW)
-{
+void CubePiece::rotateZ(bool bCW) {
     SIDECOLOR nTmp;
 
     if (bCW) {
@@ -157,8 +139,7 @@ void CubePiece::rotateZ(bool bCW)
         m_SideColor[SD_RIGHT]  = m_SideColor[SD_BOTTOM];
         m_SideColor[SD_BOTTOM] = m_SideColor[SD_LEFT];
         m_SideColor[SD_LEFT]   = nTmp;
-    }
-    else {
+    } else {
         nTmp                    = m_SideColor[SD_TOP];
         m_SideColor[SD_TOP]    = m_SideColor[SD_LEFT];
         m_SideColor[SD_LEFT]   = m_SideColor[SD_BOTTOM];
@@ -166,3 +147,6 @@ void CubePiece::rotateZ(bool bCW)
         m_SideColor[SD_RIGHT]  = nTmp;
     }
 }
+
+}
+

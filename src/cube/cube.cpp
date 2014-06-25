@@ -1,21 +1,76 @@
 #include <cmath>
 #include <cfloat>
+#include <algorithm>
+#include <numeric>
 
 #include "GL/glew.h"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/vector_angle.hpp"
 #include "cube/cube.h"
+#include "logging/logging.hpp"
 
-#define ALMOST_ZERO   1e-6f
+namespace cube {
 
-Cube::Cube()
-{
+static constexpr float ALMOST_ZERO = 1e-6;
+
+// for debug purposes
+std::ostream &operator<<(std::ostream &stream, Rotation r) {
+    switch (r) {
+    case Rotation::X_ROTATION:
+        stream << "X_ROTATION";
+        break;
+
+    case Rotation::Y_ROTATION:
+        stream << "Y_ROTATION";
+        break;
+    }
+    return stream;
+}
+
+std::ostream &operator<<(std::ostream &stream, Clockwise c) {
+    switch (c) {
+    case Clockwise::Clockwise:
+        stream << "Clockwise";
+        break;
+
+    case Clockwise::CounterClockwise:
+        stream << "CounterClockwise";
+        break;
+    }
+    return stream;
+}
+
+std::ostream &operator<<(std::ostream &stream, SIDE s) {
+    switch (s) {
+    case SD_RIGHT:
+        stream << "RIGHT";
+        break;
+    case SD_LEFT:
+        stream << "LEFT";
+        break;
+    case SD_TOP:
+        stream << "TOP";
+        break;
+    case SD_BOTTOM:
+        stream << "BOTTOM";
+        break;
+    case SD_FRONT:
+        stream << "FRONT";
+        break;
+    case SD_BACK:
+        stream << "BACK";
+        break;
+    }
+    return stream;
+}
+// end debug
+
+Cube::Cube() {
     memset(m_pPieces, 0, sizeof(CubePiece*)*3*3*3);
 }
 
-Cube::~Cube()
-{
+Cube::~Cube() {
     for (int x=0; x<3; x++) {
         for (int y=0; y<3; y++) {
             for (int z=0; z<3; z++) {
@@ -26,13 +81,11 @@ Cube::~Cube()
     }
 }
 
-void Cube::init(void)
-{
+void Cube::init(void) {
     reset();
 }
 
-void Cube::draw(void)
-{
+void Cube::draw(void) {
     int x,y,z;
 
     for (x=-1; x<=1; x++) {
@@ -44,8 +97,7 @@ void Cube::draw(void)
     }
 }
 
-void Cube::reset(void)
-{
+void Cube::reset(void) {
     for (int x=0; x<3; x++) {
         for (int y=0; y<3; y++) {
             for (int z=0; z<3; z++) {
@@ -59,86 +111,82 @@ void Cube::reset(void)
 
 }
 
-bool Cube::rotate(glm::mat4 Projection, glm::mat4 ModelView, glm::vec4 Viewport,
-                   glm::vec2 wndSize, glm::vec2 ptMouseWnd, glm::vec2 ptLastMouseWnd)
-{
-    static bool animate = false;
+bool Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
+                   glm::vec2 wndSize, glm::vec2 ptMouseWnd, glm::vec2 ptLastMouseWnd) {
 
     glm::vec2 ptMouse(ptMouseWnd.x, wndSize.y-ptMouseWnd.y);
     glm::vec2 ptLastMouse(ptLastMouseWnd.x, wndSize.y-ptLastMouseWnd.y);
 
-    glm::vec3 CubeCorner[8];
+    glm::vec3 cubeCorner[8];
 
     // use glm::project instead of gluProject
-    CubeCorner[0] = glm::project(glm::vec3(1.5, 1.5, 1.5), ModelView, Projection, Viewport);
-    CubeCorner[1] = glm::project(glm::vec3(1.5,-1.5, 1.5), ModelView, Projection, Viewport);
-    CubeCorner[2] = glm::project(glm::vec3(-1.5,-1.5, 1.5), ModelView, Projection, Viewport);
-    CubeCorner[3] = glm::project(glm::vec3(-1.5, 1.5, 1.5), ModelView, Projection, Viewport);
+    cubeCorner[0] = glm::project(glm::vec3(1.5, 1.5, 1.5), modelView, projection, viewport);
+    cubeCorner[1] = glm::project(glm::vec3(1.5,-1.5, 1.5), modelView, projection, viewport);
+    cubeCorner[2] = glm::project(glm::vec3(-1.5,-1.5, 1.5), modelView, projection, viewport);
+    cubeCorner[3] = glm::project(glm::vec3(-1.5, 1.5, 1.5), modelView, projection, viewport);
 
-    CubeCorner[4] = glm::project(glm::vec3(1.5, 1.5,-1.5), ModelView, Projection, Viewport);
-    CubeCorner[5] = glm::project(glm::vec3(1.5,-1.5,-1.5), ModelView, Projection, Viewport);
-    CubeCorner[6] = glm::project(glm::vec3(-1.5,-1.5,-1.5), ModelView, Projection, Viewport);
-    CubeCorner[7] = glm::project(glm::vec3(-1.5, 1.5,-1.5), ModelView, Projection, Viewport);
+    cubeCorner[4] = glm::project(glm::vec3(1.5, 1.5,-1.5), modelView, projection, viewport);
+    cubeCorner[5] = glm::project(glm::vec3(1.5,-1.5,-1.5), modelView, projection, viewport);
+    cubeCorner[6] = glm::project(glm::vec3(-1.5,-1.5,-1.5), modelView, projection, viewport);
+    cubeCorner[7] = glm::project(glm::vec3(-1.5, 1.5,-1.5), modelView, projection, viewport);
 
 
     //Find the min/max X and Y to do a rough bounding box test.
-    float xMin=FLT_MAX, yMin=FLT_MAX;
-    float xMax=FLT_MIN, yMax=FLT_MIN;
-    for (int i=0; i<8; i++) {
-        xMin = fmin(xMin, (float)CubeCorner[i].x);
-        yMin = fmin(yMin, (float)CubeCorner[i].y);
-        xMax = fmax(xMax, (float)CubeCorner[i].x);
-        yMax = fmax(yMax, (float)CubeCorner[i].y);
+    float xMin = FLT_MAX, yMin = FLT_MAX;
+    float xMax = FLT_MIN, yMax = FLT_MIN;
+    for (int i = 0; i<8; i++) {
+        xMin = std::fmin(xMin, cubeCorner[i].x);
+        yMin = std::fmin(yMin, cubeCorner[i].y);
+        xMax = std::fmax(xMax, cubeCorner[i].x);
+        yMax = std::fmax(yMax, cubeCorner[i].y);
     }
 
     //Check if point was outside rough test and return if it was.
     if (!(xMin <= ptLastMouse.x && ptLastMouse.x <= xMax
-          && yMin <= ptLastMouse.y && ptLastMouse.y <= yMax))
-    {
-        return false;        //Failed rough bounding box test
+          && yMin <= ptLastMouse.y && ptLastMouse.y <= yMax)) {
+        //Failed rough bounding box test
+        return false;
     }
 
     glm::vec3 Corner[6][4] = {
-        {CubeCorner[5], CubeCorner[1], CubeCorner[0], CubeCorner[4]},    //Right
-        {CubeCorner[6], CubeCorner[2], CubeCorner[3], CubeCorner[7]},    //Left
-        {CubeCorner[7], CubeCorner[4], CubeCorner[0], CubeCorner[3]},    //Top
-        {CubeCorner[6], CubeCorner[5], CubeCorner[1], CubeCorner[2]},    //Bottom
-        {CubeCorner[2], CubeCorner[1], CubeCorner[0], CubeCorner[3]},    //Front
-        {CubeCorner[6], CubeCorner[5], CubeCorner[4], CubeCorner[7]},    //Back
+        {cubeCorner[5], cubeCorner[1], cubeCorner[0], cubeCorner[4]},    //Right
+        {cubeCorner[6], cubeCorner[2], cubeCorner[3], cubeCorner[7]},    //Left
+        {cubeCorner[7], cubeCorner[4], cubeCorner[0], cubeCorner[3]},    //Top
+        {cubeCorner[6], cubeCorner[5], cubeCorner[1], cubeCorner[2]},    //Bottom
+        {cubeCorner[2], cubeCorner[1], cubeCorner[0], cubeCorner[3]},    //Front
+        {cubeCorner[6], cubeCorner[5], cubeCorner[4], cubeCorner[7]},    //Back
     };
 
     double fMinZ = DBL_MAX;
     double fTmp;
-    SIDE Side = (SIDE)-1;
+    SIDE side = (SIDE)-1;
 
-
-    for (int i=0; i<6; i++) {
+    for (int i = 0; i<6; i++) {
         if (poly4InsideTest(Corner[i], ptLastMouse.x, ptLastMouse.y)) {
             fTmp = fmin(fmin(fmin(Corner[i][0].z, Corner[i][1].z), Corner[i][2].z), Corner[i][3].z);
             if (fTmp < fMinZ) {
-                Side = (SIDE)i;
+                side = (SIDE)i;
                 fMinZ = fTmp;
             }
         }
     }
 
-    if ((int) Side == -1)
-        return false;        //Missed all the sides.
+    if ((int) side == -1) {
+        // Missed all the sides.
+        return false;
+    }
 
-    glm::vec2 vX(
-        (float)(Corner[Side][1].x - Corner[Side][0].x),
-        (float)(Corner[Side][1].y - Corner[Side][0].y)
-        );
+    glm::vec2 vX(Corner[side][1].x - Corner[side][0].x,
+                 Corner[side][1].y - Corner[side][0].y
+                );
 
-    glm::vec2 vY(
-        (float)(Corner[Side][2].x - Corner[Side][1].x),
-        (float)(Corner[Side][2].y - Corner[Side][1].y)
-        );
+    glm::vec2 vY(Corner[side][2].x - Corner[side][1].x,
+                 Corner[side][2].y - Corner[side][1].y
+                );
 
-    glm::vec2 vMouse(
-        (float)(ptMouse.x - ptLastMouse.x),
-        (float)(ptMouse.y - ptLastMouse.y)
-        );
+    glm::vec2 vMouse(ptMouse.x - ptLastMouse.x,
+                     ptMouse.y - ptLastMouse.y
+                    );
 
     //angle between the mouse vector and the
     //X/Y vector for this cube side.
@@ -148,248 +196,303 @@ bool Cube::rotate(glm::mat4 Projection, glm::mat4 ModelView, glm::vec4 Viewport,
 
     float xDiff = glm::angle(vX, vMouse);
     float yDiff = glm::angle(vY, vMouse);
-    float minDiff = (float)fmin(fmin(fmin(fabs(xDiff), fabs(yDiff)), fabs(xDiff-180)), fabs(yDiff-180));
 
-    int Section;
+    std::vector<float> diffs = {
+        std::fabs(xDiff),
+        std::fabs(xDiff - 180),
+        std::fabs(yDiff),
+        std::fabs(yDiff - 180)
+    };
+    float minDiff = *std::min_element(diffs.begin(), diffs.end()) + ALMOST_ZERO;
 
-    minDiff += ALMOST_ZERO;
+    this->rotating = true;
+    this->rotationIteration = 0;
+    this->side = side;
 
-    if (fabs(xDiff) <= minDiff) {
-        Section = getYsection(Corner[Side], ptLastMouse.x ,ptLastMouse.y);
-        switch (Side) {
-        case SD_FRONT:    rotateYSection(Section, true, animate, true);     break;
-        case SD_BACK:     rotateYSection(Section, false, animate, true);    break;
-        case SD_LEFT:     rotateYSection(Section, true, animate, true);     break;
-        case SD_RIGHT:    rotateYSection(Section, false, animate, true);    break;
-        case SD_TOP:      rotateZSection(Section, false, animate, true);     break;
-        case SD_BOTTOM:   rotateZSection(Section, true, animate, true);    break;
-        }
+    if (diffs[0] <= minDiff) {
+        this->rotation = Rotation::Y_ROTATION;
+        this->clockwise = Clockwise::Clockwise;
+        this->section = getYsection(Corner[side], ptLastMouse.x ,ptLastMouse.y);
     }
-    else if (fabs(xDiff-180) <= minDiff) {
-        Section = getYsection(Corner[Side], ptLastMouse.x, ptLastMouse.y);
-        switch (Side) {
-        case SD_FRONT:    rotateYSection(Section, false, animate, true);    break;
-        case SD_BACK:     rotateYSection(Section, true, animate, true);     break;
-        case SD_LEFT:     rotateYSection(Section, false, animate, true);    break;
-        case SD_RIGHT:    rotateYSection(Section, true, animate, true);     break;
-        case SD_TOP:      rotateZSection(Section, true, animate, true);    break;
-        case SD_BOTTOM:   rotateZSection(Section, false, animate, true);     break;
-        }
+    else if (diffs[1] <= minDiff) {
+        this->rotation = Rotation::Y_ROTATION;
+        this->clockwise = Clockwise::CounterClockwise;
+        this->section = getYsection(Corner[side], ptLastMouse.x ,ptLastMouse.y);
     }
-    else if (fabs(yDiff) <= minDiff) {
-        Section = getXsection(Corner[Side], ptLastMouse.x, ptLastMouse.y);
-        switch (Side) {
-        case SD_FRONT:    rotateXSection(Section, false, animate, true);    break;
-        case SD_BACK:     rotateXSection(Section, true,  animate, true);    break;
-        case SD_LEFT:     rotateZSection(Section, false, animate, true);     break;
-        case SD_RIGHT:    rotateZSection(Section, true, animate, true);    break;
-        case SD_TOP:      rotateXSection(Section, true,  animate, true);    break;
-        case SD_BOTTOM:   rotateXSection(Section, false, animate, true);    break;
-        }
+    else if (diffs[2] <= minDiff) {
+        this->rotation = Rotation::X_ROTATION;
+        this->clockwise = Clockwise::Clockwise;
+        this->section = getXsection(Corner[side], ptLastMouse.x, ptLastMouse.y);
     }
-    else if (fabs(yDiff-180) <= minDiff) {
-        Section = getXsection(Corner[Side], ptLastMouse.x, ptLastMouse.y);
-        switch (Side) {
-        case SD_FRONT:    rotateXSection(Section, true,  animate, true);    break;
-        case SD_BACK:     rotateXSection(Section, false, animate, true);    break;
-        case SD_LEFT:     rotateZSection(Section, true, animate, true);    break;
-        case SD_RIGHT:    rotateZSection(Section, false, animate, true);     break;
-        case SD_TOP:      rotateXSection(Section, false, animate, true);    break;
-        case SD_BOTTOM:   rotateXSection(Section, true,  animate, true);    break;
-        }
+    else if (diffs[3] <= minDiff) {
+        this->rotation = Rotation::X_ROTATION;
+        this->clockwise = Clockwise::CounterClockwise;
+        this->section = getXsection(Corner[side], ptLastMouse.x, ptLastMouse.y);
+    } else {
+        this->rotating = false;
     }
-    else {
-        return false;
-    }
+
+    LOG(DEBUG) << "Rotation: " << rotation
+        << ", clockwise: " << clockwise
+        << ", side: " << side
+        << ", section: " << section;
 
     return true;
 }
 
-void Cube::animateRotation(CubePiece* piece[], int ctPieces, glm::vec3 v, float fAngle)
-{
-    int x;
-
-    for (unsigned i=0; i<35; i++) {
-        float fRotAngle = fAngle * i/35.0f;
-
-        for (int x=0; x<ctPieces; x++)
-            piece[x]->setRotation(fRotAngle, v);
-
-        //m_pWnd->Invalidate();
-        //m_pWnd->UpdateWindow();
+void Cube::update() {
+    if (!rotating) {
+        return;
     }
 
-    for (x=0; x<ctPieces; x++)
-        piece[x]->clrRotation();
+    switch (rotation) {
+    case Rotation::X_ROTATION:
+        updateXRotation();
+        break;
+
+    case Rotation::Y_ROTATION:
+        updateYRotation();
+        break;
+    }
 }
 
-void Cube::rotateXSection(int Section, bool bCW, bool bAnimate, bool bRecord)
-{
-    CubePiece* pTmp;
-    int i;
+void Cube::updateXRotation() {
+    switch (side) {
+    case SD_FRONT:
+    case SD_BOTTOM:
+        updateXSection(invert(clockwise));
+        break;
 
-    //ASSERT(-1 <= nSection && nSection <= 1);
+    case SD_BACK:
+    case SD_TOP:
+        updateXSection(clockwise);
+        break;
 
+    case SD_LEFT:
+        updateZSection(invert(clockwise));
+        break;
+
+    case SD_RIGHT:
+        updateZSection(clockwise);
+        break;
+    }
+}
+
+void Cube::updateYRotation() {
+    switch (side) {
+    case SD_FRONT:
+    case SD_LEFT:
+        updateYSection(clockwise);
+        break;
+
+    case SD_BACK:
+    case SD_RIGHT:
+        updateYSection(invert(clockwise));
+        break;
+
+    case SD_TOP:
+        updateZSection(invert(clockwise));
+        break;
+
+    case SD_BOTTOM:
+        updateZSection(clockwise);
+        break;
+    }
+}
+
+void Cube::updateXSection(Clockwise modifier) {
+    static glm::vec3 rotationAxis(1, 0, 0);
+
+    // get pieces for the section moved
     CubePiece* pieces[] = {
-        getPiece(Section, 1, 1),
-        getPiece(Section,-1, 1),
-        getPiece(Section,-1,-1),
-        getPiece(Section, 1,-1),
-        getPiece(Section, 1, 0),
-        getPiece(Section, 0, 1),
-        getPiece(Section,-1, 0),
-        getPiece(Section, 0,-1),
-        getPiece(Section, 0, 0),
+        getPiece(section, 1, 1),
+        getPiece(section,-1, 1),
+        getPiece(section,-1,-1),
+        getPiece(section, 1,-1),
+        getPiece(section, 1, 0),
+        getPiece(section, 0, 1),
+        getPiece(section,-1, 0),
+        getPiece(section, 0,-1),
+        getPiece(section, 0, 0),
     };
 
-    float fAngle = bCW ? 90.0f : -90.0f;
-    if (bAnimate)
-        animateRotation(pieces, ELEMENTS_OF(pieces), glm::vec3(1,0,0), fAngle);
-
-    for (i=0; i<ELEMENTS_OF(pieces); i++)
-        pieces[i]->rotateX(bCW);
-
-
-    if (bCW) {
-        pTmp = getPiece(Section, 1, 1);
-        getPiece(Section, 1, 1) = getPiece(Section, 1,-1);
-        getPiece(Section, 1,-1) = getPiece(Section,-1,-1);
-        getPiece(Section,-1,-1) = getPiece(Section,-1, 1);
-        getPiece(Section,-1, 1) = pTmp;
-
-        pTmp = getPiece(Section, 1, 0);
-        getPiece(Section, 1, 0) = getPiece(Section, 0,-1);
-        getPiece(Section, 0,-1) = getPiece(Section,-1, 0);
-        getPiece(Section,-1, 0) = getPiece(Section, 0, 1);
-        getPiece(Section, 0, 1) = pTmp;
+    // animate
+    if (animate(pieces, rotationAxis, modifier)) {
+        return;
     }
-    else {
-        pTmp = getPiece(Section, 1, 1);
-        getPiece(Section, 1, 1) = getPiece(Section,-1, 1);
-        getPiece(Section,-1, 1) = getPiece(Section,-1,-1);
-        getPiece(Section,-1,-1) = getPiece(Section, 1,-1);
-        getPiece(Section, 1,-1) = pTmp;
+    rotating = false;
 
-        pTmp = getPiece(Section, 1, 0);
-        getPiece(Section, 1, 0) = getPiece(Section, 0, 1);
-        getPiece(Section, 0, 1) = getPiece(Section,-1, 0);
-        getPiece(Section,-1, 0) = getPiece(Section, 0,-1);
-        getPiece(Section, 0,-1) = pTmp;
-
+    // after animating the move, clear rotation angle and vector
+    // and rotate sides of all pieces in the section
+    for (int i = 0; i < 9; i++) {
+        pieces[i]->clrRotation();
+        pieces[i]->rotateX((bool) modifier);
     }
 
+    // swap pieces in the section
+    CubePiece* pTmp;
+    if ((bool) modifier) {
+        pTmp = getPiece(section, 1, 1);
+        getPiece(section, 1, 1) = getPiece(section, 1,-1);
+        getPiece(section, 1,-1) = getPiece(section,-1,-1);
+        getPiece(section,-1,-1) = getPiece(section,-1, 1);
+        getPiece(section,-1, 1) = pTmp;
+
+        pTmp = getPiece(section, 1, 0);
+        getPiece(section, 1, 0) = getPiece(section, 0,-1);
+        getPiece(section, 0,-1) = getPiece(section,-1, 0);
+        getPiece(section,-1, 0) = getPiece(section, 0, 1);
+        getPiece(section, 0, 1) = pTmp;
+    } else {
+        pTmp = getPiece(section, 1, 1);
+        getPiece(section, 1, 1) = getPiece(section,-1, 1);
+        getPiece(section,-1, 1) = getPiece(section,-1,-1);
+        getPiece(section,-1,-1) = getPiece(section, 1,-1);
+        getPiece(section, 1,-1) = pTmp;
+
+        pTmp = getPiece(section, 1, 0);
+        getPiece(section, 1, 0) = getPiece(section, 0, 1);
+        getPiece(section, 0, 1) = getPiece(section,-1, 0);
+        getPiece(section,-1, 0) = getPiece(section, 0,-1);
+        getPiece(section, 0,-1) = pTmp;
+    }
 }
 
-void Cube::rotateYSection(int Section, bool bCW, bool bAnimate, bool bRecord)
-{
-    CubePiece* pTmp;
-    int i;
+void Cube::updateYSection(Clockwise modifier) {
+    static glm::vec3 rotationAxis(0, 1, 0);
 
-    //ASSERT(-1 <= nSection && nSection <= 1);
-
+    // get pieces for the section moved
     CubePiece* pieces[] = {
-        getPiece( 1, Section, 1),
-        getPiece(-1, Section, 1),
-        getPiece(-1, Section,-1),
-        getPiece( 1, Section,-1),
-        getPiece( 1, Section, 0),
-        getPiece( 0, Section, 1),
-        getPiece(-1, Section, 0),
-        getPiece( 0, Section,-1),
-        getPiece( 0, Section, 0)
+        getPiece( 1, section, 1),
+        getPiece(-1, section, 1),
+        getPiece(-1, section,-1),
+        getPiece( 1, section,-1),
+        getPiece( 1, section, 0),
+        getPiece( 0, section, 1),
+        getPiece(-1, section, 0),
+        getPiece( 0, section,-1),
+        getPiece( 0, section, 0)
     };
 
-    float fAngle = bCW ? 90.0f : -90.0f;
-    if (bAnimate)
-        animateRotation(pieces, ELEMENTS_OF(pieces), glm::vec3(0,1,0), fAngle);
+    // animate
+    if (animate(pieces, rotationAxis, modifier)) {
+        return;
+    }
+    rotating = false;
 
+    // after animating the move, clear rotation angle and vector
+    // and rotate sides of all pieces in the section
+    for (int i = 0; i < 9; i++) {
+        pieces[i]->clrRotation();
+        pieces[i]->rotateY((bool) modifier);
+    }
 
-    for (i=0; i<ELEMENTS_OF(pieces); i++)
-        pieces[i]->rotateY(bCW);
+    // swap pieces in the section
+    CubePiece* pTmp;
+    if ((bool) modifier) {
+        pTmp = getPiece(1, section, 1);
+        getPiece( 1, section, 1) = getPiece(-1, section, 1);
+        getPiece(-1, section, 1) = getPiece(-1, section,-1);
+        getPiece(-1, section,-1) = getPiece( 1, section,-1);
+        getPiece( 1, section,-1) = pTmp;
 
-
-    if (bCW) {
-        pTmp = getPiece(1, Section, 1);
-        getPiece( 1, Section, 1) = getPiece(-1, Section, 1);
-        getPiece(-1, Section, 1) = getPiece(-1, Section,-1);
-        getPiece(-1, Section,-1) = getPiece( 1, Section,-1);
-        getPiece( 1, Section,-1) = pTmp;
-
-        pTmp = getPiece(1, Section, 0);
-        getPiece( 1, Section, 0) = getPiece( 0, Section, 1);
-        getPiece( 0, Section, 1) = getPiece(-1, Section, 0);
-        getPiece(-1, Section, 0) = getPiece( 0, Section,-1);
-        getPiece( 0, Section,-1) = pTmp;
+        pTmp = getPiece(1, section, 0);
+        getPiece( 1, section, 0) = getPiece( 0, section, 1);
+        getPiece( 0, section, 1) = getPiece(-1, section, 0);
+        getPiece(-1, section, 0) = getPiece( 0, section,-1);
+        getPiece( 0, section,-1) = pTmp;
     }
     else {
-        pTmp = getPiece(1, Section, 1);
-        getPiece( 1, Section, 1) = getPiece( 1, Section,-1);
-        getPiece( 1, Section,-1) = getPiece(-1, Section,-1);
-        getPiece(-1, Section,-1) = getPiece(-1, Section, 1);
-        getPiece(-1, Section, 1) = pTmp;
+        pTmp = getPiece(1, section, 1);
+        getPiece( 1, section, 1) = getPiece( 1, section,-1);
+        getPiece( 1, section,-1) = getPiece(-1, section,-1);
+        getPiece(-1, section,-1) = getPiece(-1, section, 1);
+        getPiece(-1, section, 1) = pTmp;
 
-        pTmp = getPiece(1, Section, 0);
-        getPiece( 1, Section, 0) = getPiece( 0, Section,-1);
-        getPiece( 0, Section,-1) = getPiece(-1, Section, 0);
-        getPiece(-1, Section, 0) = getPiece( 0, Section, 1);
-        getPiece( 0, Section, 1) = pTmp;
+        pTmp = getPiece(1, section, 0);
+        getPiece( 1, section, 0) = getPiece( 0, section,-1);
+        getPiece( 0, section,-1) = getPiece(-1, section, 0);
+        getPiece(-1, section, 0) = getPiece( 0, section, 1);
+        getPiece( 0, section, 1) = pTmp;
     }
 
 }
 
-void Cube::rotateZSection(int Section, bool bCW, bool bAnimate, bool bRecord)
-{
-    CubePiece* pTmp;
-    int i;
+void Cube::updateZSection(Clockwise modifier) {
+    static glm::vec3 rotationAxis(0, 0, 1);
 
-    //ASSERT(-1 <= nSection && nSection <= 1);
-
+    // get pieces for the section moved
     CubePiece* pieces[] = {
-        getPiece( 1, 1, Section),
-        getPiece(-1, 1, Section),
-        getPiece(-1,-1, Section),
-        getPiece( 1,-1, Section),
-        getPiece( 1, 0, Section),
-        getPiece( 0, 1, Section),
-        getPiece(-1, 0, Section),
-        getPiece( 0,-1, Section),
-        getPiece( 0, 0, Section)
+        getPiece( 1, 1, section),
+        getPiece(-1, 1, section),
+        getPiece(-1,-1, section),
+        getPiece( 1,-1, section),
+        getPiece( 1, 0, section),
+        getPiece( 0, 1, section),
+        getPiece(-1, 0, section),
+        getPiece( 0,-1, section),
+        getPiece( 0, 0, section)
     };
 
-    float fAngle = bCW ? 90.0f : -90.0f;
-    if (bAnimate)
-        animateRotation(pieces, ELEMENTS_OF(pieces), glm::vec3(0,0,1), fAngle);
+    // animate
+    if (animate(pieces, rotationAxis, modifier)) {
+        return;
+    }
+    rotating = false;
 
+    // after animating the move, clear rotation angle and vector
+    // and rotate sides of all pieces in the section
+    for (int i = 0; i < 9; i++) {
+        pieces[i]->clrRotation();
+        pieces[i]->rotateZ((bool) modifier);
+    }
 
-    for (i=0; i<ELEMENTS_OF(pieces); i++)
-        pieces[i]->rotateZ(bCW);
+    // swap pieces in the section
+    CubePiece* pTmp;
+    if ((bool) modifier) {
+        pTmp = getPiece( 1, 1, section);
+        getPiece( 1, 1, section) = getPiece( 1,-1, section);
+        getPiece( 1,-1, section) = getPiece(-1,-1, section);
+        getPiece(-1,-1, section) = getPiece(-1, 1, section);
+        getPiece(-1, 1, section) = pTmp;
 
-
-    if (bCW) {
-        pTmp = getPiece( 1, 1, Section);
-        getPiece( 1, 1, Section) = getPiece( 1,-1, Section);
-        getPiece( 1,-1, Section) = getPiece(-1,-1, Section);
-        getPiece(-1,-1, Section) = getPiece(-1, 1, Section);
-        getPiece(-1, 1, Section) = pTmp;
-
-        pTmp = getPiece( 1, 0, Section);
-        getPiece( 1, 0, Section) = getPiece( 0,-1, Section);
-        getPiece( 0,-1, Section) = getPiece(-1, 0, Section);
-        getPiece(-1, 0, Section) = getPiece( 0, 1, Section);
-        getPiece( 0, 1, Section) = pTmp;
+        pTmp = getPiece( 1, 0, section);
+        getPiece( 1, 0, section) = getPiece( 0,-1, section);
+        getPiece( 0,-1, section) = getPiece(-1, 0, section);
+        getPiece(-1, 0, section) = getPiece( 0, 1, section);
+        getPiece( 0, 1, section) = pTmp;
     }
     else {
-        pTmp = getPiece( 1, 1, Section);
-        getPiece( 1, 1, Section) = getPiece(-1, 1, Section);
-        getPiece(-1, 1, Section) = getPiece(-1,-1, Section);
-        getPiece(-1,-1, Section) = getPiece( 1,-1, Section);
-        getPiece( 1,-1, Section) = pTmp;
+        pTmp = getPiece( 1, 1, section);
+        getPiece( 1, 1, section) = getPiece(-1, 1, section);
+        getPiece(-1, 1, section) = getPiece(-1,-1, section);
+        getPiece(-1,-1, section) = getPiece( 1,-1, section);
+        getPiece( 1,-1, section) = pTmp;
 
-        pTmp = getPiece( 1, 0, Section);
-        getPiece( 1, 0, Section) = getPiece( 0, 1, Section);
-        getPiece( 0, 1, Section) = getPiece(-1, 0, Section);
-        getPiece(-1, 0, Section) = getPiece( 0,-1, Section);
-        getPiece( 0,-1, Section) = pTmp;
+        pTmp = getPiece( 1, 0, section);
+        getPiece( 1, 0, section) = getPiece( 0, 1, section);
+        getPiece( 0, 1, section) = getPiece(-1, 0, section);
+        getPiece(-1, 0, section) = getPiece( 0,-1, section);
+        getPiece( 0,-1, section) = pTmp;
+    }
+}
+
+bool Cube::animate(CubePiece *pieces[9], const glm::vec3 &axis, Clockwise modifier) {
+    if (rotationIteration < ROTATION_FRAMES) {
+        float maxAngle = (bool) modifier ? 90.f : -90.f;
+        float rotAngle = maxAngle * rotationIteration / (float) ROTATION_FRAMES;
+
+        for (int i = 0; i < 9; i++) {
+            pieces[i]->setRotation(rotAngle, axis);
+        }
+
+        ++rotationIteration;
+
+        return true;
     }
 
+    return false;
 }
+
+}
+

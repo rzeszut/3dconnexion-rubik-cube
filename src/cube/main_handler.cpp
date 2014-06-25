@@ -85,7 +85,7 @@ void MainHandler::handleEvents() {
 }
 
 void MainHandler::mouseButton(gl::MouseButton button, gl::MouseState state, float x, float y) {
-    if (button != gl::MouseButton::RIGHT) {
+    if (button != gl::MouseButton::RIGHT || cube.isRotating()) {
         return;
     }
 
@@ -124,6 +124,8 @@ void MainHandler::update(float delta) {
         mouseHoldBegin.reset();
         mouseHoldEnd.reset();
     }
+
+    cube.update();
 }
 
 void MainHandler::render() {

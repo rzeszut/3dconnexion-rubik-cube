@@ -2,8 +2,7 @@
 
 #include "cube/util.h"
 
-
-#define ALMOST_ZERO 1e-6     // error tolerance
+namespace cube {
 
 bool poly4InsideTest(glm::vec2 *ptCorners, float ptX, float ptY)
 {
@@ -188,5 +187,7 @@ int getXsection(glm::vec3 *pt3Corners, float ptX, float ptY)
     }
 
     return getXsection(pt2Corners, ptX, ptY);
+}
+
 }
 
