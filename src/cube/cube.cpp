@@ -1,7 +1,6 @@
 #include <cmath>
 #include <cfloat>
 #include <algorithm>
-#include <numeric>
 
 #include "GL/glew.h"
 #include "glm/gtc/type_ptr.hpp"
@@ -66,89 +65,72 @@ std::ostream &operator<<(std::ostream &stream, SIDE s) {
 }
 // end debug
 
-Cube::Cube() {
-    memset(m_pPieces, 0, sizeof(CubePiece*)*3*3*3);
-}
-
 Cube::~Cube() {
-    for (int x=0; x<3; x++) {
-        for (int y=0; y<3; y++) {
-            for (int z=0; z<3; z++) {
-                if (m_pPieces[x][y][z])
-                    delete m_pPieces[x][y][z];
+    for (auto &it : cubePieces) {
+        if (it) {
+            delete it;
+        }
+    }
+}
+
+void Cube::init(){
+    for (int x : {-1, 0, 1}) {
+        for (int y : {-1, 0, 1}) {
+            for (int z : {-1, 0, 1}) {
+                getPiece(x, y, z) = new CubePiece(glm::ivec3(x, y, z));
             }
         }
     }
 }
 
-void Cube::init(void) {
-    reset();
-}
-
-void Cube::draw(void) {
-    int x,y,z;
-
-    for (x=-1; x<=1; x++) {
-        for (y=-1; y<=1; y++) {
-            for (z=-1; z<=1; z++) {
-                getPiece(x,y,z)->draw(x,y,z);
+void Cube::draw() {
+    for (int x : {-1, 0, 1}) {
+        for (int y : {-1, 0, 1}) {
+            for (int z : {-1, 0, 1}) {
+                getPiece(x, y, z)->draw(x, y, z);
             }
         }
     }
 }
 
-void Cube::reset(void) {
-    for (int x=0; x<3; x++) {
-        for (int y=0; y<3; y++) {
-            for (int z=0; z<3; z++) {
-                if (m_pPieces[x][y][z])
-                    delete m_pPieces[x][y][z];
+void Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
+                   glm::vec2 ptMouseWnd, glm::vec2 ptLastMouseWnd) {
 
-                m_pPieces[x][y][z] = new CubePiece(glm::ivec3(x-1, y-1, z-1));
-            }
-        }
-    }
+    int windowWidth = viewport.w;
+    glm::vec2 ptMouse(ptMouseWnd.x, windowWidth - ptMouseWnd.y);
+    glm::vec2 ptLastMouse(ptLastMouseWnd.x, windowWidth - ptLastMouseWnd.y);
 
-}
+    // cube corners in window coordinates
+    glm::vec3 cubeCorner[8] = {
+        glm::project(glm::vec3(1.5, 1.5, 1.5),  modelView, projection, viewport),
+        glm::project(glm::vec3(1.5,-1.5, 1.5),  modelView, projection, viewport),
+        glm::project(glm::vec3(-1.5,-1.5, 1.5), modelView, projection, viewport),
+        glm::project(glm::vec3(-1.5, 1.5, 1.5), modelView, projection, viewport),
 
-bool Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
-                   glm::vec2 wndSize, glm::vec2 ptMouseWnd, glm::vec2 ptLastMouseWnd) {
+        glm::project(glm::vec3(1.5, 1.5,-1.5),  modelView, projection, viewport),
+        glm::project(glm::vec3(1.5,-1.5,-1.5),  modelView, projection, viewport),
+        glm::project(glm::vec3(-1.5,-1.5,-1.5), modelView, projection, viewport),
+        glm::project(glm::vec3(-1.5, 1.5,-1.5), modelView, projection, viewport)
+    };
 
-    glm::vec2 ptMouse(ptMouseWnd.x, wndSize.y-ptMouseWnd.y);
-    glm::vec2 ptLastMouse(ptLastMouseWnd.x, wndSize.y-ptLastMouseWnd.y);
-
-    glm::vec3 cubeCorner[8];
-
-    // use glm::project instead of gluProject
-    cubeCorner[0] = glm::project(glm::vec3(1.5, 1.5, 1.5), modelView, projection, viewport);
-    cubeCorner[1] = glm::project(glm::vec3(1.5,-1.5, 1.5), modelView, projection, viewport);
-    cubeCorner[2] = glm::project(glm::vec3(-1.5,-1.5, 1.5), modelView, projection, viewport);
-    cubeCorner[3] = glm::project(glm::vec3(-1.5, 1.5, 1.5), modelView, projection, viewport);
-
-    cubeCorner[4] = glm::project(glm::vec3(1.5, 1.5,-1.5), modelView, projection, viewport);
-    cubeCorner[5] = glm::project(glm::vec3(1.5,-1.5,-1.5), modelView, projection, viewport);
-    cubeCorner[6] = glm::project(glm::vec3(-1.5,-1.5,-1.5), modelView, projection, viewport);
-    cubeCorner[7] = glm::project(glm::vec3(-1.5, 1.5,-1.5), modelView, projection, viewport);
-
-
-    //Find the min/max X and Y to do a rough bounding box test.
+    // Find the min/max X and Y to do a rough bounding box test.
     float xMin = FLT_MAX, yMin = FLT_MAX;
     float xMax = FLT_MIN, yMax = FLT_MIN;
-    for (int i = 0; i<8; i++) {
+    for (int i = 0; i < 8; i++) {
         xMin = std::fmin(xMin, cubeCorner[i].x);
         yMin = std::fmin(yMin, cubeCorner[i].y);
         xMax = std::fmax(xMax, cubeCorner[i].x);
         yMax = std::fmax(yMax, cubeCorner[i].y);
     }
 
-    //Check if point was outside rough test and return if it was.
+    // Check if point was outside rough test and return if it was.
     if (!(xMin <= ptLastMouse.x && ptLastMouse.x <= xMax
           && yMin <= ptLastMouse.y && ptLastMouse.y <= yMax)) {
         //Failed rough bounding box test
-        return false;
+        return;
     }
 
-    glm::vec3 Corner[6][4] = {
+    glm::vec3 corners[6][4] = {
         {cubeCorner[5], cubeCorner[1], cubeCorner[0], cubeCorner[4]},    //Right
         {cubeCorner[6], cubeCorner[2], cubeCorner[3], cubeCorner[7]},    //Left
         {cubeCorner[7], cubeCorner[4], cubeCorner[0], cubeCorner[3]},    //Top
@@ -157,13 +139,16 @@ bool Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
         {cubeCorner[6], cubeCorner[5], cubeCorner[4], cubeCorner[7]},    //Back
     };
 
-    double fMinZ = DBL_MAX;
-    double fTmp;
-    SIDE side = (SIDE)-1;
+    float fMinZ = FLT_MAX;
+    float fTmp;
+    SIDE side = (SIDE) - 1;
 
-    for (int i = 0; i<6; i++) {
-        if (poly4InsideTest(Corner[i], ptLastMouse.x, ptLastMouse.y)) {
-            fTmp = fmin(fmin(fmin(Corner[i][0].z, Corner[i][1].z), Corner[i][2].z), Corner[i][3].z);
+    // test which side was hit
+    for (int i = 0; i < 6; i++) {
+        if (poly4InsideTest(corners[i], ptLastMouse.x, ptLastMouse.y)) {
+            auto zCorners = {corners[i][0].z, corners[i][1].z, corners[i][2].z, corners[i][3].z};
+            fTmp = *std::min_element(zCorners.begin(), zCorners.end());
+
             if (fTmp < fMinZ) {
                 side = (SIDE)i;
                 fMinZ = fTmp;
@@ -173,23 +158,23 @@ bool Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
 
     if ((int) side == -1) {
         // Missed all the sides.
-        return false;
+        return;
     }
 
-    glm::vec2 vX(Corner[side][1].x - Corner[side][0].x,
-                 Corner[side][1].y - Corner[side][0].y
+    glm::vec2 vX(corners[side][1].x - corners[side][0].x,
+                 corners[side][1].y - corners[side][0].y
                 );
 
-    glm::vec2 vY(Corner[side][2].x - Corner[side][1].x,
-                 Corner[side][2].y - Corner[side][1].y
+    glm::vec2 vY(corners[side][2].x - corners[side][1].x,
+                 corners[side][2].y - corners[side][1].y
                 );
 
     glm::vec2 vMouse(ptMouse.x - ptLastMouse.x,
                      ptMouse.y - ptLastMouse.y
                     );
 
-    //angle between the mouse vector and the
-    //X/Y vector for this cube side.
+    // angle between the mouse vector and the
+    // X/Y vector for this cube side.
     vX = glm::normalize(vX);
     vY = glm::normalize(vY);
     vMouse = glm::normalize(vMouse);
@@ -205,6 +190,7 @@ bool Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
     };
     float minDiff = *std::min_element(diffs.begin(), diffs.end()) + ALMOST_ZERO;
 
+    // save rotation data
     this->rotating = true;
     this->rotationIteration = 0;
     this->side = side;
@@ -212,22 +198,22 @@ bool Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
     if (diffs[0] <= minDiff) {
         this->rotation = Rotation::Y_ROTATION;
         this->clockwise = Clockwise::Clockwise;
-        this->section = getYsection(Corner[side], ptLastMouse.x ,ptLastMouse.y);
+        this->section = getYsection(corners[side], ptLastMouse.x ,ptLastMouse.y);
     }
     else if (diffs[1] <= minDiff) {
         this->rotation = Rotation::Y_ROTATION;
         this->clockwise = Clockwise::CounterClockwise;
-        this->section = getYsection(Corner[side], ptLastMouse.x ,ptLastMouse.y);
+        this->section = getYsection(corners[side], ptLastMouse.x ,ptLastMouse.y);
     }
     else if (diffs[2] <= minDiff) {
         this->rotation = Rotation::X_ROTATION;
         this->clockwise = Clockwise::Clockwise;
-        this->section = getXsection(Corner[side], ptLastMouse.x, ptLastMouse.y);
+        this->section = getXsection(corners[side], ptLastMouse.x, ptLastMouse.y);
     }
     else if (diffs[3] <= minDiff) {
         this->rotation = Rotation::X_ROTATION;
         this->clockwise = Clockwise::CounterClockwise;
-        this->section = getXsection(Corner[side], ptLastMouse.x, ptLastMouse.y);
+        this->section = getXsection(corners[side], ptLastMouse.x, ptLastMouse.y);
     } else {
         this->rotating = false;
     }
@@ -236,8 +222,6 @@ bool Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
         << ", clockwise: " << clockwise
         << ", side: " << side
         << ", section: " << section;
-
-    return true;
 }
 
 void Cube::update() {

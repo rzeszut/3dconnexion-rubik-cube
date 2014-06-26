@@ -116,10 +116,9 @@ void MainHandler::update(float delta) {
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixf(glm::value_ptr(view));
 
-    glm::vec2 wndSize = glm::vec2(viewport.z, viewport.w);
     if (mouseHoldBegin && mouseHoldEnd) {
         // initiate rotation
-        cube.rotate(projection, view, viewport, wndSize, *mouseHoldEnd, *mouseHoldBegin);
+        cube.rotate(projection, view, viewport, *mouseHoldEnd, *mouseHoldBegin);
 
         mouseHoldBegin.reset();
         mouseHoldEnd.reset();
