@@ -182,8 +182,8 @@ int getXsection(glm::vec3 *pt3Corners, float ptX, float ptY)
     glm::vec2 pt2Corners[4];
 
     for (int i=0; i<4; i++) {
-        pt2Corners[i].x = pt3Corners[i].y;
-        pt2Corners[i].x = pt3Corners[i].y;
+        pt2Corners[i].x = pt3Corners[i].x;
+        pt2Corners[i].y = pt3Corners[i].y;
     }
 
     return getXsection(pt2Corners, ptX, ptY);
