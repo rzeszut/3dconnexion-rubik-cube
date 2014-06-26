@@ -31,14 +31,13 @@ namespace colors {
 class CubePiece {
 private:
     std::map<Side, glm::ivec3> sideColors;
-    glm::ivec3 m_posHome;
 
     //Rotation animation state variables
-    float m_fRotationAngle;
-    glm::vec3 m_vRotation;
+    float rotationAngle;
+    glm::vec3 rotation;
 
 public:
-    CubePiece(const glm::ivec3 &pos);
+    CubePiece(int x, int y, int z);
     ~CubePiece() = default;
 
     void draw(int x, int y, int z);
@@ -48,12 +47,12 @@ public:
     void rotateZ(bool clockwise);
 
     void setRotation(float fAngle, const glm::vec3 &vRotation) {
-        m_fRotationAngle = fAngle;
-        m_vRotation = vRotation;
+        rotationAngle = fAngle;
+        rotation = vRotation;
     }
 
     void clrRotation() {
-        m_fRotationAngle = 0;
+        rotationAngle = 0;
     }
 
 private:

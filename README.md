@@ -33,18 +33,6 @@ Run the program:
 
     ./run
 
-### Mac
-
-Install CMake and pkg-config:
-
-    brew install cmake
-    brew install pkg-config
-
-Install g++:
-
-    brew tap homebrew/versions
-    brew install gcc49 --enable-cxx
-
 ### Windows
 
 Install [MinGW](http://sourceforge.net/projects/mingwbuilds/) and add it into PATH.
@@ -63,9 +51,7 @@ Usage
 
 + W, A, S, D -- moving the cube around
 + Up, Down -- zoom in/zoom out
-+ E, Q -- rotate selected face
-+ left mouse button -- select face: you need to select three mini-cubes lying on the same face
-+ right mouse button -- cancel selection; exit rotation
++ left mouse button -- rotate the cube
 
 Problems
 --------

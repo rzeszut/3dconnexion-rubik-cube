@@ -25,13 +25,13 @@ void Cube::init(){
     for (int x : {-1, 0, 1}) {
         for (int y : {-1, 0, 1}) {
             for (int z : {-1, 0, 1}) {
-                getPiece(x, y, z) = new CubePiece(glm::ivec3(x, y, z));
+                getPiece(x, y, z) = new CubePiece(x, y, z);
             }
         }
     }
 }
 
-void Cube::draw() {
+void Cube::render() {
     for (int x : {-1, 0, 1}) {
         for (int y : {-1, 0, 1}) {
             for (int z : {-1, 0, 1}) {

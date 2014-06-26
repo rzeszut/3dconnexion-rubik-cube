@@ -32,7 +32,6 @@ constexpr int PIECES_COUNT = 3 * 3 * 3;
 class Cube {
 private:
     std::array<CubePiece *, PIECES_COUNT> cubePieces;
-    CubePiece* m_pPieces[3][3][3];
 
     // rotation data
     bool rotating;
@@ -51,7 +50,7 @@ public:
     void init();
 
     void update();
-    void draw();
+    void render();
 
     bool isRotating() const {
         return rotating;

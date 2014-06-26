@@ -14,8 +14,17 @@ using namespace optional;
 bool MainHandler::init() {
     glfwSetInputMode(getWindowReference(), GLFW_STICKY_KEYS, GL_TRUE);
 
+    glfwWindowHint(GLFW_SAMPLES, 4);
+
     // Dark blue background
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    glLineWidth(3.f);
+
+    glShadeModel(GL_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_POLYGON_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -23,7 +32,7 @@ bool MainHandler::init() {
     glEnable(GL_CULL_FACE);
 
     camera = new gl::CenteredCamera(glm::vec3(0, 0, 0), WINDOW_WIDTH, WINDOW_HEIGHT);
-    camera->setRadius(15.f);
+    camera->setRadius(8.f);
     camera->setMoveSpeed(10.f);
 
     cube.init();
@@ -85,7 +94,7 @@ void MainHandler::handleEvents() {
 }
 
 void MainHandler::mouseButton(gl::MouseButton button, gl::MouseState state, float x, float y) {
-    if (button != gl::MouseButton::RIGHT || cube.isRotating()) {
+    if (button != gl::MouseButton::LEFT || cube.isRotating()) {
         return;
     }
 
@@ -130,7 +139,7 @@ void MainHandler::update(float delta) {
 void MainHandler::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    cube.draw();
+    cube.render();
 }
 
 }

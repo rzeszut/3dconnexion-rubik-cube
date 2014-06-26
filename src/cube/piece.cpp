@@ -4,22 +4,22 @@
 
 namespace cube {
 
-CubePiece::CubePiece(const glm::ivec3 &posHome) :
-    m_posHome(posHome), m_fRotationAngle(0), m_vRotation(0,0,0)
+CubePiece::CubePiece(int x, int y, int z) :
+    rotationAngle(0), rotation(0,0,0)
 {
-    sideColors[Side::RIGHT]  = posHome.x== 1 ? colors::WHITE  : colors::BLACK;
-    sideColors[Side::LEFT]   = posHome.x==-1 ? colors::BLUE   : colors::BLACK;
-    sideColors[Side::TOP]    = posHome.y== 1 ? colors::GREEN  : colors::BLACK;
-    sideColors[Side::BOTTOM] = posHome.y==-1 ? colors::ORANGE : colors::BLACK;
-    sideColors[Side::FRONT]  = posHome.z== 1 ? colors::RED    : colors::BLACK;
-    sideColors[Side::BACK]   = posHome.z==-1 ? colors::YELLOW : colors::BLACK;
+    sideColors[Side::RIGHT]  = x ==  1 ? colors::WHITE  : colors::BLACK;
+    sideColors[Side::LEFT]   = x == -1 ? colors::BLUE   : colors::BLACK;
+    sideColors[Side::TOP]    = y ==  1 ? colors::GREEN  : colors::BLACK;
+    sideColors[Side::BOTTOM] = y == -1 ? colors::ORANGE : colors::BLACK;
+    sideColors[Side::FRONT]  = z ==  1 ? colors::RED    : colors::BLACK;
+    sideColors[Side::BACK]   = z == -1 ? colors::YELLOW : colors::BLACK;
 }
 
 void CubePiece::draw(int x, int y, int z) {
     glPushMatrix();
 
-    if (m_fRotationAngle) {
-        glRotatef(m_fRotationAngle, m_vRotation.x, m_vRotation.y, m_vRotation.z);
+    if (rotationAngle) {
+        glRotatef(rotationAngle, rotation.x, rotation.y, rotation.z);
     }
 
     glTranslatef((float)x, (float)y, (float)z);
