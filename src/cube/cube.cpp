@@ -6,64 +6,12 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/vector_angle.hpp"
+
 #include "cube/cube.h"
-#include "logging/logging.hpp"
 
 namespace cube {
 
 static constexpr float ALMOST_ZERO = 1e-6;
-
-// for debug purposes
-std::ostream &operator<<(std::ostream &stream, Rotation r) {
-    switch (r) {
-    case Rotation::X_ROTATION:
-        stream << "X_ROTATION";
-        break;
-
-    case Rotation::Y_ROTATION:
-        stream << "Y_ROTATION";
-        break;
-    }
-    return stream;
-}
-
-std::ostream &operator<<(std::ostream &stream, Clockwise c) {
-    switch (c) {
-    case Clockwise::CLOCKWISE:
-        stream << "CLOCKWISE";
-        break;
-
-    case Clockwise::COUNTER_CLOCKWISE:
-        stream << "COUNTER_CLOCKWISE";
-        break;
-    }
-    return stream;
-}
-
-std::ostream &operator<<(std::ostream &stream, Side s) {
-    switch (s) {
-    case Side::RIGHT:
-        stream << "RIGHT";
-        break;
-    case Side::LEFT:
-        stream << "LEFT";
-        break;
-    case Side::TOP:
-        stream << "TOP";
-        break;
-    case Side::BOTTOM:
-        stream << "BOTTOM";
-        break;
-    case Side::FRONT:
-        stream << "FRONT";
-        break;
-    case Side::BACK:
-        stream << "BACK";
-        break;
-    }
-    return stream;
-}
-// end debug
 
 Cube::~Cube() {
     for (auto &it : cubePieces) {
@@ -153,6 +101,7 @@ void Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
             auto zCorners = {c[0].z, c[1].z, c[2].z, c[3].z};
             fTmp = *std::min_element(zCorners.begin(), zCorners.end());
 
+            // choose side with min z
             if (fTmp < fMinZ) {
                 sideFound = optional::Optional<Side>(side);
                 fMinZ = fTmp;
@@ -221,11 +170,6 @@ void Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
     } else {
         rotating = false;
     }
-
-    LOG(DEBUG) << "Rotation: " << rotation
-        << ", clockwise: " << clockwise
-        << ", side: " << side
-        << ", section: " << section;
 }
 
 void Cube::update() {

@@ -1,7 +1,6 @@
 #include "GL/glew.h"
 
 #include "cube/piece.h"
-#include "logging/logging.hpp"
 
 namespace cube {
 
