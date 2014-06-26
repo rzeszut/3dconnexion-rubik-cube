@@ -18,12 +18,12 @@ enum class Rotation {
 };
 
 enum class Clockwise : bool {
-    Clockwise = true,
-    CounterClockwise = false
+    CLOCKWISE = true,
+    COUNTER_CLOCKWISE = false
 };
 
 inline Clockwise invert(Clockwise c) {
-    return (bool) c ? Clockwise::CounterClockwise : Clockwise::Clockwise;
+    return (bool) c ? Clockwise::COUNTER_CLOCKWISE : Clockwise::CLOCKWISE;
 }
 
 constexpr int ROTATION_FRAMES = 30;
@@ -39,7 +39,7 @@ private:
 
     Rotation rotation;
     Clockwise clockwise;
-    SIDE side;
+    Side side;
     int section;
 
     int rotationIteration;
@@ -57,7 +57,7 @@ public:
         return rotating;
     }
 
-    //Get piece based on cube coordinates
+    // Get piece based on cube coordinates
     CubePiece*& getPiece(int x, int y, int z) {
         int i = 3 * 3 * (x + 1) + 3 * (y + 1) + z + 1;
         return cubePieces.at(i);

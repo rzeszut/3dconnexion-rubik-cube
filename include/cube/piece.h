@@ -1,52 +1,36 @@
 #ifndef PIECE_H
 #define PIECE_H
 
+#include <map>
+
 #include "glm/glm.hpp"
 
 #include "cube/util.h"
 
 namespace cube {
 
-enum SIDE {
-    SD_RIGHT,
-    SD_LEFT,
-    SD_TOP,
-    SD_BOTTOM,
-    SD_FRONT,
-    SD_BACK,
+enum class Side: short {
+    RIGHT,
+    LEFT,
+    TOP,
+    BOTTOM,
+    FRONT,
+    BACK,
 };
 
-//Define colors for side
-enum SIDECOLOR {
-    RED,
-    GREEN,
-    BLUE,
-    PURPLE,
-    ORANGE,
-    YELLOW,
-    BLACK,
-    WHITE,
+namespace colors {
+    const glm::ivec3 RED    {255, 0, 0};
+    const glm::ivec3 GREEN  {0, 255, 0};
+    const glm::ivec3 BLUE   {0, 0, 255};
+    const glm::ivec3 ORANGE {255, 127, 0};
+    const glm::ivec3 YELLOW {255, 255, 0};
+    const glm::ivec3 WHITE  {255, 255, 255};
+    const glm::ivec3 BLACK  {0, 0, 0};
 };
-
-const struct {
-    unsigned char r, g, b;
-} m_rgb[] = {
-    {255,  0,  0,},              //Red
-    {  0, 255,   0,},            //Green
-    {  0,   0, 255,},            //Blue
-    {255,   0, 255,},            //Purple
-    {255, 127,   0,},            //Orange
-    {255, 255,   0,},            //Yellow
-    {  0,   0,   0,},            //Black
-    {255, 255, 255,},            //White
-};
-
-#define MAKECOLOR(Color)        m_rgb[Color].r, m_rgb[Color].g, m_rgb[Color].b
-#define MAKESIDECOLOR(Side)     MAKECOLOR(m_SideColor[Side])
 
 class CubePiece {
 private:
-    SIDECOLOR m_SideColor[6];
+    std::map<Side, glm::ivec3> sideColors;
     glm::ivec3 m_posHome;
 
     //Rotation animation state variables
@@ -59,18 +43,22 @@ public:
 
     void draw(int x, int y, int z);
 
-    void rotateX(bool bCW);
-    void rotateY(bool bCW);
-    void rotateZ(bool bCW);
+    void rotateX(bool clockwise);
+    void rotateY(bool clockwise);
+    void rotateZ(bool clockwise);
 
     void setRotation(float fAngle, const glm::vec3 &vRotation) {
-        m_fRotationAngle=fAngle;
-        m_vRotation=vRotation;
+        m_fRotationAngle = fAngle;
+        m_vRotation = vRotation;
     }
 
-    void clrRotation(void) {
-        m_fRotationAngle=0;
+    void clrRotation() {
+        m_fRotationAngle = 0;
     }
+
+private:
+    void glColorSide(Side side);
+    void glColor(glm::ivec3 color);
 };
 
 }

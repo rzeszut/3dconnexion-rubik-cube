@@ -1,18 +1,19 @@
 #include "GL/glew.h"
 
 #include "cube/piece.h"
+#include "logging/logging.hpp"
 
 namespace cube {
 
 CubePiece::CubePiece(const glm::ivec3 &posHome) :
     m_posHome(posHome), m_fRotationAngle(0), m_vRotation(0,0,0)
 {
-    m_SideColor[SD_RIGHT]  = posHome.x== 1 ? WHITE  : BLACK;
-    m_SideColor[SD_LEFT]   = posHome.x==-1 ? BLUE   : BLACK;
-    m_SideColor[SD_TOP]    = posHome.y== 1 ? GREEN  : BLACK;
-    m_SideColor[SD_BOTTOM] = posHome.y==-1 ? ORANGE : BLACK;
-    m_SideColor[SD_FRONT]  = posHome.z== 1 ? RED    : BLACK;
-    m_SideColor[SD_BACK]   = posHome.z==-1 ? YELLOW : BLACK;
+    sideColors[Side::RIGHT]  = posHome.x== 1 ? colors::WHITE  : colors::BLACK;
+    sideColors[Side::LEFT]   = posHome.x==-1 ? colors::BLUE   : colors::BLACK;
+    sideColors[Side::TOP]    = posHome.y== 1 ? colors::GREEN  : colors::BLACK;
+    sideColors[Side::BOTTOM] = posHome.y==-1 ? colors::ORANGE : colors::BLACK;
+    sideColors[Side::FRONT]  = posHome.z== 1 ? colors::RED    : colors::BLACK;
+    sideColors[Side::BACK]   = posHome.z==-1 ? colors::YELLOW : colors::BLACK;
 }
 
 void CubePiece::draw(int x, int y, int z) {
@@ -25,44 +26,44 @@ void CubePiece::draw(int x, int y, int z) {
     glTranslatef((float)x, (float)y, (float)z);
 
     glBegin(GL_QUADS);
-    glColor3ub(MAKESIDECOLOR(SD_TOP));
+    glColorSide(Side::TOP);
     glVertex3f( 0.5f, 0.5f,-0.5f);
     glVertex3f(-0.5f, 0.5f,-0.5f);
     glVertex3f(-0.5f, 0.5f, 0.5f);
     glVertex3f( 0.5f, 0.5f, 0.5f);
 
-    glColor3ub(MAKESIDECOLOR(SD_BOTTOM));
+    glColorSide(Side::BOTTOM);
     glVertex3f( 0.5f,-0.5f, 0.5f);
     glVertex3f(-0.5f,-0.5f, 0.5f);
     glVertex3f(-0.5f,-0.5f,-0.5f);
     glVertex3f( 0.5f,-0.5f,-0.5f);
 
-    glColor3ub(MAKESIDECOLOR(SD_FRONT));
+    glColorSide(Side::FRONT);
     glVertex3f( 0.5f, 0.5f, 0.5f);
     glVertex3f(-0.5f, 0.5f, 0.5f);
     glVertex3f(-0.5f,-0.5f, 0.5f);
     glVertex3f( 0.5f,-0.5f, 0.5f);
 
-    glColor3ub(MAKESIDECOLOR(SD_BACK));
+    glColorSide(Side::BACK);
     glVertex3f( 0.5f,-0.5f,-0.5f);
     glVertex3f(-0.5f,-0.5f,-0.5f);
     glVertex3f(-0.5f, 0.5f,-0.5f);
     glVertex3f( 0.5f, 0.5f,-0.5f);
 
-    glColor3ub(MAKESIDECOLOR(SD_LEFT));
+    glColorSide(Side::LEFT);
     glVertex3f(-0.5f, 0.5f, 0.5f);
     glVertex3f(-0.5f, 0.5f,-0.5f);
     glVertex3f(-0.5f,-0.5f,-0.5f);
     glVertex3f(-0.5f,-0.5f, 0.5f);
 
-    glColor3ub(MAKESIDECOLOR(SD_RIGHT));
+    glColorSide(Side::RIGHT);
     glVertex3f( 0.5f, 0.5f,-0.5f);
     glVertex3f( 0.5f, 0.5f, 0.5f);
     glVertex3f( 0.5f,-0.5f, 0.5f);
     glVertex3f( 0.5f,-0.5f,-0.5f);
     glEnd();
 
-    glColor3ub(MAKECOLOR(BLACK));
+    glColor(colors::BLACK);
 
     glBegin(GL_LINE_STRIP);
     glVertex3f( 0.5f, 0.5f,-0.5f);
@@ -95,57 +96,66 @@ void CubePiece::draw(int x, int y, int z) {
 }
 
 void CubePiece::rotateX(bool bCW) {
-    SIDECOLOR nTmp;
+    glm::ivec3 nTmp;
 
     if (bCW) {
-        nTmp                    = m_SideColor[SD_TOP];
-        m_SideColor[SD_TOP]    = m_SideColor[SD_BACK];
-        m_SideColor[SD_BACK]   = m_SideColor[SD_BOTTOM];
-        m_SideColor[SD_BOTTOM] = m_SideColor[SD_FRONT];
-        m_SideColor[SD_FRONT]  = nTmp;
+        nTmp                    = sideColors[Side::TOP];
+        sideColors[Side::TOP]    = sideColors[Side::BACK];
+        sideColors[Side::BACK]   = sideColors[Side::BOTTOM];
+        sideColors[Side::BOTTOM] = sideColors[Side::FRONT];
+        sideColors[Side::FRONT]  = nTmp;
     } else {
-        nTmp                    = m_SideColor[SD_TOP];
-        m_SideColor[SD_TOP]    = m_SideColor[SD_FRONT];
-        m_SideColor[SD_FRONT]  = m_SideColor[SD_BOTTOM];
-        m_SideColor[SD_BOTTOM] = m_SideColor[SD_BACK];
-        m_SideColor[SD_BACK]   = nTmp;
+        nTmp                    = sideColors[Side::TOP];
+        sideColors[Side::TOP]    = sideColors[Side::FRONT];
+        sideColors[Side::FRONT]  = sideColors[Side::BOTTOM];
+        sideColors[Side::BOTTOM] = sideColors[Side::BACK];
+        sideColors[Side::BACK]   = nTmp;
     }
 }
 
 void CubePiece::rotateY(bool bCW) {
-    SIDECOLOR nTmp;
+    glm::ivec3 nTmp;
 
     if (bCW) {
-        nTmp                    = m_SideColor[SD_FRONT];
-        m_SideColor[SD_FRONT]  = m_SideColor[SD_LEFT];
-        m_SideColor[SD_LEFT]   = m_SideColor[SD_BACK];
-        m_SideColor[SD_BACK]   = m_SideColor[SD_RIGHT];
-        m_SideColor[SD_RIGHT]  = nTmp;
+        nTmp                    = sideColors[Side::FRONT];
+        sideColors[Side::FRONT]  = sideColors[Side::LEFT];
+        sideColors[Side::LEFT]   = sideColors[Side::BACK];
+        sideColors[Side::BACK]   = sideColors[Side::RIGHT];
+        sideColors[Side::RIGHT]  = nTmp;
     } else {
-        nTmp                    = m_SideColor[SD_FRONT];
-        m_SideColor[SD_FRONT]  = m_SideColor[SD_RIGHT];
-        m_SideColor[SD_RIGHT]  = m_SideColor[SD_BACK];
-        m_SideColor[SD_BACK]   = m_SideColor[SD_LEFT];
-        m_SideColor[SD_LEFT]   = nTmp;
+        nTmp                    = sideColors[Side::FRONT];
+        sideColors[Side::FRONT]  = sideColors[Side::RIGHT];
+        sideColors[Side::RIGHT]  = sideColors[Side::BACK];
+        sideColors[Side::BACK]   = sideColors[Side::LEFT];
+        sideColors[Side::LEFT]   = nTmp;
     }
 }
 
 void CubePiece::rotateZ(bool bCW) {
-    SIDECOLOR nTmp;
+    glm::ivec3 nTmp;
 
     if (bCW) {
-        nTmp                    = m_SideColor[SD_TOP];
-        m_SideColor[SD_TOP]    = m_SideColor[SD_RIGHT];
-        m_SideColor[SD_RIGHT]  = m_SideColor[SD_BOTTOM];
-        m_SideColor[SD_BOTTOM] = m_SideColor[SD_LEFT];
-        m_SideColor[SD_LEFT]   = nTmp;
+        nTmp                    = sideColors[Side::TOP];
+        sideColors[Side::TOP]    = sideColors[Side::RIGHT];
+        sideColors[Side::RIGHT]  = sideColors[Side::BOTTOM];
+        sideColors[Side::BOTTOM] = sideColors[Side::LEFT];
+        sideColors[Side::LEFT]   = nTmp;
     } else {
-        nTmp                    = m_SideColor[SD_TOP];
-        m_SideColor[SD_TOP]    = m_SideColor[SD_LEFT];
-        m_SideColor[SD_LEFT]   = m_SideColor[SD_BOTTOM];
-        m_SideColor[SD_BOTTOM] = m_SideColor[SD_RIGHT];
-        m_SideColor[SD_RIGHT]  = nTmp;
+        nTmp                    = sideColors[Side::TOP];
+        sideColors[Side::TOP]    = sideColors[Side::LEFT];
+        sideColors[Side::LEFT]   = sideColors[Side::BOTTOM];
+        sideColors[Side::BOTTOM] = sideColors[Side::RIGHT];
+        sideColors[Side::RIGHT]  = nTmp;
     }
+}
+
+void CubePiece::glColorSide(Side side) {
+    auto color = sideColors[side];
+    glColor(color);
+}
+
+void CubePiece::glColor(glm::ivec3 color) {
+    glColor3ub(color.x, color.y, color.z);
 }
 
 }

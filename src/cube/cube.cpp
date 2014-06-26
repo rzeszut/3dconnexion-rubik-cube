@@ -29,35 +29,35 @@ std::ostream &operator<<(std::ostream &stream, Rotation r) {
 
 std::ostream &operator<<(std::ostream &stream, Clockwise c) {
     switch (c) {
-    case Clockwise::Clockwise:
-        stream << "Clockwise";
+    case Clockwise::CLOCKWISE:
+        stream << "CLOCKWISE";
         break;
 
-    case Clockwise::CounterClockwise:
-        stream << "CounterClockwise";
+    case Clockwise::COUNTER_CLOCKWISE:
+        stream << "COUNTER_CLOCKWISE";
         break;
     }
     return stream;
 }
 
-std::ostream &operator<<(std::ostream &stream, SIDE s) {
+std::ostream &operator<<(std::ostream &stream, Side s) {
     switch (s) {
-    case SD_RIGHT:
+    case Side::RIGHT:
         stream << "RIGHT";
         break;
-    case SD_LEFT:
+    case Side::LEFT:
         stream << "LEFT";
         break;
-    case SD_TOP:
+    case Side::TOP:
         stream << "TOP";
         break;
-    case SD_BOTTOM:
+    case Side::BOTTOM:
         stream << "BOTTOM";
         break;
-    case SD_FRONT:
+    case Side::FRONT:
         stream << "FRONT";
         break;
-    case SD_BACK:
+    case Side::BACK:
         stream << "BACK";
         break;
     }
@@ -130,36 +130,41 @@ void Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
         return;
     }
 
-    glm::vec3 corners[6][4] = {
-        {cubeCorner[5], cubeCorner[1], cubeCorner[0], cubeCorner[4]},    //Right
-        {cubeCorner[6], cubeCorner[2], cubeCorner[3], cubeCorner[7]},    //Left
-        {cubeCorner[7], cubeCorner[4], cubeCorner[0], cubeCorner[3]},    //Top
-        {cubeCorner[6], cubeCorner[5], cubeCorner[1], cubeCorner[2]},    //Bottom
-        {cubeCorner[2], cubeCorner[1], cubeCorner[0], cubeCorner[3]},    //Front
-        {cubeCorner[6], cubeCorner[5], cubeCorner[4], cubeCorner[7]},    //Back
+    // corners for sides
+    std::map<Side, std::array<glm::vec3, 4>> corners {
+        {Side::RIGHT, {{cubeCorner[5], cubeCorner[1], cubeCorner[0], cubeCorner[4]}}},
+        {Side::LEFT,  {{cubeCorner[6], cubeCorner[2], cubeCorner[3], cubeCorner[7]}}},
+        {Side::TOP,   {{cubeCorner[7], cubeCorner[4], cubeCorner[0], cubeCorner[3]}}},
+        {Side::BOTTOM,{{cubeCorner[6], cubeCorner[5], cubeCorner[1], cubeCorner[2]}}},
+        {Side::FRONT, {{cubeCorner[2], cubeCorner[1], cubeCorner[0], cubeCorner[3]}}},
+        {Side::BACK,  {{cubeCorner[6], cubeCorner[5], cubeCorner[4], cubeCorner[7]}}}
     };
 
     float fMinZ = FLT_MAX;
     float fTmp;
-    SIDE side = (SIDE) - 1;
+    optional::Optional<Side> sideFound;
 
     // test which side was hit
-    for (int i = 0; i < 6; i++) {
-        if (poly4InsideTest(corners[i], ptLastMouse.x, ptLastMouse.y)) {
-            auto zCorners = {corners[i][0].z, corners[i][1].z, corners[i][2].z, corners[i][3].z};
+    for (auto &it : corners) {
+        auto side = it.first;
+        auto c = it.second;
+
+        if (poly4InsideTest(c.data(), ptLastMouse.x, ptLastMouse.y)) {
+            auto zCorners = {c[0].z, c[1].z, c[2].z, c[3].z};
             fTmp = *std::min_element(zCorners.begin(), zCorners.end());
 
             if (fTmp < fMinZ) {
-                side = (SIDE)i;
+                sideFound = optional::Optional<Side>(side);
                 fMinZ = fTmp;
             }
         }
     }
 
-    if ((int) side == -1) {
+    if (!sideFound) {
         // Missed all the sides.
         return;
     }
+    side = *sideFound;
 
     glm::vec2 vX(corners[side][1].x - corners[side][0].x,
                  corners[side][1].y - corners[side][0].y
@@ -191,31 +196,30 @@ void Cube::rotate(glm::mat4 projection, glm::mat4 modelView, glm::vec4 viewport,
     float minDiff = *std::min_element(diffs.begin(), diffs.end()) + ALMOST_ZERO;
 
     // save rotation data
-    this->rotating = true;
-    this->rotationIteration = 0;
-    this->side = side;
+    rotating = true;
+    rotationIteration = 0;
 
     if (diffs[0] <= minDiff) {
-        this->rotation = Rotation::Y_ROTATION;
-        this->clockwise = Clockwise::Clockwise;
-        this->section = getYsection(corners[side], ptLastMouse.x ,ptLastMouse.y);
+        rotation = Rotation::Y_ROTATION;
+        clockwise = Clockwise::CLOCKWISE;
+        section = getYsection(corners[side].data(), ptLastMouse.x ,ptLastMouse.y);
     }
     else if (diffs[1] <= minDiff) {
-        this->rotation = Rotation::Y_ROTATION;
-        this->clockwise = Clockwise::CounterClockwise;
-        this->section = getYsection(corners[side], ptLastMouse.x ,ptLastMouse.y);
+        rotation = Rotation::Y_ROTATION;
+        clockwise = Clockwise::COUNTER_CLOCKWISE;
+        section = getYsection(corners[side].data(), ptLastMouse.x ,ptLastMouse.y);
     }
     else if (diffs[2] <= minDiff) {
-        this->rotation = Rotation::X_ROTATION;
-        this->clockwise = Clockwise::Clockwise;
-        this->section = getXsection(corners[side], ptLastMouse.x, ptLastMouse.y);
+        rotation = Rotation::X_ROTATION;
+        clockwise = Clockwise::CLOCKWISE;
+        section = getXsection(corners[side].data(), ptLastMouse.x, ptLastMouse.y);
     }
     else if (diffs[3] <= minDiff) {
-        this->rotation = Rotation::X_ROTATION;
-        this->clockwise = Clockwise::CounterClockwise;
-        this->section = getXsection(corners[side], ptLastMouse.x, ptLastMouse.y);
+        rotation = Rotation::X_ROTATION;
+        clockwise = Clockwise::COUNTER_CLOCKWISE;
+        section = getXsection(corners[side].data(), ptLastMouse.x, ptLastMouse.y);
     } else {
-        this->rotating = false;
+        rotating = false;
     }
 
     LOG(DEBUG) << "Rotation: " << rotation
@@ -242,21 +246,21 @@ void Cube::update() {
 
 void Cube::updateXRotation() {
     switch (side) {
-    case SD_FRONT:
-    case SD_BOTTOM:
+    case Side::FRONT:
+    case Side::BOTTOM:
         updateXSection(invert(clockwise));
         break;
 
-    case SD_BACK:
-    case SD_TOP:
+    case Side::BACK:
+    case Side::TOP:
         updateXSection(clockwise);
         break;
 
-    case SD_LEFT:
+    case Side::LEFT:
         updateZSection(invert(clockwise));
         break;
 
-    case SD_RIGHT:
+    case Side::RIGHT:
         updateZSection(clockwise);
         break;
     }
@@ -264,21 +268,21 @@ void Cube::updateXRotation() {
 
 void Cube::updateYRotation() {
     switch (side) {
-    case SD_FRONT:
-    case SD_LEFT:
+    case Side::FRONT:
+    case Side::LEFT:
         updateYSection(clockwise);
         break;
 
-    case SD_BACK:
-    case SD_RIGHT:
+    case Side::BACK:
+    case Side::RIGHT:
         updateYSection(invert(clockwise));
         break;
 
-    case SD_TOP:
+    case Side::TOP:
         updateZSection(invert(clockwise));
         break;
 
-    case SD_BOTTOM:
+    case Side::BOTTOM:
         updateZSection(clockwise);
         break;
     }
